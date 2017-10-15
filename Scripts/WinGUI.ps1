@@ -34,10 +34,10 @@ function okBox ([string]$title, [string]$text){
     return $Result;
 }
 
-$title = "Test Title";
-$text = "This is test text.`n[PASS] Passed this test.`n[PASS] Passed this test.`n[PASS] Passed this test.";
+#$title = "Test Title";
+#$text = "This is test text.`n[PASS] Passed this test.`n[PASS] Passed this test.`n[PASS] Passed this test.";
 
-$res = askBox $title $text;
-okBox $title $res;
+#$res = askBox $title $text;
+#okBox $title $res;
 #askToFix2 $title $text;
 

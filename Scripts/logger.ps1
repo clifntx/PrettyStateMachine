@@ -23,9 +23,7 @@ function startLogging($p, $l) {
     Write-Host "[ START ] $ti"
     Add-Content $log "[ START ] $ti"
     Write-Host ("Starting log" | timestamp)
-    Add-Content $log ("Starting log`n" | timestamp)
-    $script:out = ""
-    $script:out += "QA Results:`n.......................................`n";   
+    Add-Content $log ("Starting log`n" | timestamp)  
     return $sw
 }
 

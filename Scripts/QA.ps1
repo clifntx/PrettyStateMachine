@@ -1,11 +1,4 @@
-﻿function checker($s, $c){
-    if($c){ 
-        log("[ PASS ] $s`: $c"); 
-    }else{ 
-        log("[ FAIL ] $s`: $c");
-    }
-    return $c;
-}
+﻿
 function getComputerName { return $env:COMPUTERNAME; }
 function getSerialNumber { return (get-ciminstance win32_bios).SerialNumber; }
 function getInstalledRam {  return [MATH]::Round(((Get-WmiObject -class win32_computersystem).TotalPhysicalMemory)/1GB,0) }
@@ -126,7 +119,7 @@ function checkNet {
     if(test-path ($p +"\v4")){
         $r = (Get-ChildItem ($p +"\v4"))[0] | Get-ItemPropertyValue -Name Release;
         $v = (Get-ChildItem ($p +"\v4"))[0] | Get-ItemPropertyValue -Name Version
-        write-host ".Net r: $r ; v: $v";
+        #write-host ".Net r: $r ; v: $v";
         if($r | % {$_ -lt 394802}){log("    >> ERROR: Upgrade .Net to >= 4.6.2.  Current version "+ $v);$b = $false;}
     }else{
         if(test-path $p){
@@ -160,39 +153,72 @@ function checkApps(){
     }
     return $b;
 }
+function checker($s, $c){
+    if($c){ 
+        log("[ PASS ] $s`: $c"); 
+    }else{ 
+        log("[ FAIL ] $s`: $c");
+    }
+    return $c;
+}
+function findex($f){
+    switch ($f.f){
+                "checkPS" {$res = checkPS} 
+                "checkNet" {$res = checkNet} 
+                "checkMemberInGroup" {$res = checkMemberInGroup $f.args[0] $f.args[1]} 
+                "checkMachineName" {$res = checkMachineName $f.args[0]} 
+                "checkActivationStatus" {$res = checkActivationStatus} 
+                "checkInstalledRam" {$res = checkInstalledRam $f.args[0]} 
+                "checkUniPush" {$res = checkUniPush $f.args[0]} 
+                "checkApps" {$res = checkApps} 
+                default {$res = $false;}
+    }
+    return $res;
+}
 function checkStandardSetup($pushPath) {
-    $b = $true;$RAM = 8;
-    write-host "Starting checks..."    
-    checker "Checking for AllAccess local admin account" (checkMemberInGroup "AllAccess" "Administrators")
-    checker "Checking for correct computer name" (checkMachineName ("WS-"+(getSerialNumber)));
-    #checker "Checking for Windows activation" (checkActivationStatus);
-    checker "Checking for $RAM Gb RAM or better" (checkInstalledRam $RAM);
-    checker "Checking for universal push folder $pushPath" (checkUniPush $pushPath);
-    checker "Checking for PS v 4.0 or better" (checkPS);
-    checker "Checking for .Net 4.6.2 or better" (checkNet);
-    checker "Checking for required applications" (checkApps);
-    
-    write-host "...Completed checks..."
+    $res = @();$RAM = 8;
+    write-host "Starting checks..."       
+    $checks = @(`
+        @{"msg"="Checking for PS v 4.0 or better";"f"="checkPS";"args"=@()},`
+        @{"msg"="Checking for .Net 4.6.2 or better";"f"="checkNet";"args"=@()},`
+        @{"msg"="Checking for AllAccess local admin account";"f"="checkMemberInGroup";"args"=@("AllAccess", "Administrators")},`
+        @{"msg"="Checking for correct computer name";"f"="checkMachineName";"args"=@(("WS-"+(getSerialNumber)))},`
+        #@{"msg"="Checking for Windows activation";"f"="checkActivationStatus";"args"=@()},`
+        @{"msg"="Checking for $RAM Gb RAM or better";"f"="checkInstalledRam";"args"=@($RAM)},`
+        @{"msg"="Checking for universal push folder $pushPath";"f"="checkUniPush";"args"=@($pushPath)},`
+        @{"msg"="Checking for required applications";"f"="checkApps";"args"=@()}`
+    );
+    foreach($c in $checks){
+        try{
+            $res += (checker $c.msg (findex($c)));
+        }catch{
+            log("    >> ERROR: Error with function {0}.  args: {1}" -f @($c.f,$c.args));
+        }
+    }
+
+    if($res.contains($false)){ $b=$false;}else{ $b=$true;}
+    write-host "...Completed checks.  Pass: $b";
     return $b;
 }
+
 #.....................................................
 #: Constants
 #.....................................................
-$pushPath = "c:\push\"; 
+$pushPath = "C:\Users\dbadmin\Google Drive\LocalSync\Documents\AAIT\WIn10DesktopDeployment\"; 
 $log = $pushPath + "logs\log_qa.txt";
 #.....................................................
 #: Execution steps
 #.....................................................
 
 Set-Location -Path $pushPath;
-. .\Scripts\ps\logger.ps1;
+. .\Scripts\logger.ps1;
+. .\Scripts\WinGUI.ps1;
 $sw = startLogging $pushPath "log_qa.txt";
-timeout /t -1
-checkStandardSetup $pushPath
-timeout /t -1
+$pass = checkStandardSetup $pushPath
 $out = endLogging $sw
-timeout /t -1
-[System.Windows.MessageBox]::Show($out);
+#timeout /t -1
+$outtitle = "QA Results:"; 
+$res = okBox $outtitle $out;
 
 # [] Nable remote control is working
 
