@@ -175,19 +175,19 @@ function findex($f){
     }
     return $res;
 }
-function checkStandardSetup($pushPath) {
-    $res = @();$RAM = 8;
-    write-host "Starting checks..."       
+function checkStandardSetup($params) {
+    $res = @();$RAM = 8;    
     $checks = @(`
         @{"msg"="Checking for PS v 4.0 or better";"f"="checkPS";"args"=@()},`
         @{"msg"="Checking for .Net 4.6.2 or better";"f"="checkNet";"args"=@()},`
-        @{"msg"="Checking for AllAccess local admin account";"f"="checkMemberInGroup";"args"=@("AllAccess", "Administrators")},`
-        @{"msg"="Checking for correct computer name";"f"="checkMachineName";"args"=@(("WS-"+(getSerialNumber)))},`
+        @{"msg"="Checking for {0} local admin account" -f $params.admin;"f"="checkMemberInGroup";"args"=@($params.admin, "Administrators")},`
+        @{"msg"="Checking for correct computer name";"f"="checkMachineName";"args"=@(("WS-{0}" -f $params.sn))},`
         #@{"msg"="Checking for Windows activation";"f"="checkActivationStatus";"args"=@()},`
-        @{"msg"="Checking for $RAM Gb RAM or better";"f"="checkInstalledRam";"args"=@($RAM)},`
-        @{"msg"="Checking for universal push folder $pushPath";"f"="checkUniPush";"args"=@($pushPath)},`
+        @{"msg"="Checking for {0} Gb RAM or better" -f $params.RAM;"f"="checkInstalledRam";"args"=@($params.RAM)},`
+        @{"msg"="Checking for universal push folder {0}" -f $params.pushPath;"f"="checkUniPush";"args"=@($params.pushPath)},`
         @{"msg"="Checking for required applications";"f"="checkApps";"args"=@()}`
     );
+    write-host "Starting checks..."   
     foreach($c in $checks){
         try{
             $res += (checker $c.msg (findex($c)));
@@ -195,7 +195,6 @@ function checkStandardSetup($pushPath) {
             log("    >> ERROR: Error with function {0}.  args: {1}" -f @($c.f,$c.args));
         }
     }
-
     if($res.contains($false)){ $b=$false;}else{ $b=$true;}
     write-host "...Completed checks.  Pass: $b";
     return $b;
@@ -214,7 +213,7 @@ Set-Location -Path $pushPath;
 . .\Scripts\logger.ps1;
 . .\Scripts\WinGUI.ps1;
 $sw = startLogging $pushPath "log_qa.txt";
-$pass = checkStandardSetup $pushPath
+$pass = checkStandardSetup @{"ram"=8;"pushPath"=$pushPath; "sn"=getSerialNumber; "admin"="AllAccess"};
 $out = endLogging $sw
 #timeout /t -1
 $outtitle = "QA Results:"; 
