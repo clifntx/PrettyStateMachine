@@ -1,13 +1,11 @@
 ﻿# Win10DesktopDeployment
 
-TODO:
-[ ] Automate standard wks setup<br>
-[ ] Automate client wks setup
-  [ ] Wifi setup
-  [ ] Printer installs
-  [ ] Client admin setup (if applicable)
-[ ] Automate user wks setup
-
+TODO:<br>
+<ol>
+<li>[ ] Automate standard wks setup</li>
+<li>[ ] Automate client wks setup</li>
+<li>[ ] Automate user wks setup</li>
+</ol>
 
 [ ] General Setup ( scripting goal #1 ) \\192.168.1.24\technet\Setup_Workstations\main.bat<br>
   Change AllAccess profile picture \\192.168.1.24\technet \AAIT Graphics\AllAccessLogo01.jpg<br>
