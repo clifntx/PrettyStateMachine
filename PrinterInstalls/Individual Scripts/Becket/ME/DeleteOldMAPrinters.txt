@@ -1,0 +1,6 @@
+rundll32 printui.dll,PrintUIEntry /dl /n "Fitchburg House (temp) - TOSHIBA Universal Printer 2" /q
+rundll32 printui.dll,PrintUIEntry /dl /n "Clearview (Color) - Xerox Global Print Driver PCL6" /q
+rundll32 printui.dll,PrintUIEntry /dl /n "Clearview (BW) - Xerox Global Print Driver PCL6" /q
+
+
+
