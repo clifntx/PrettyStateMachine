@@ -1,0 +1,9 @@
+﻿Customer,install_these,customerId,pathToSetupFolder,pathToPrinterConfig,Domain
+VPINorth,,122,\\192.168.1.24\technet\Setup_Workstations\Setup_Becket_Workstation\,\\192.168.1.24\technet\Scripts\setupConfigs\config_Printers_VPINorth.csv,AzureAd
+BecketInventory,,,\\192.168.1.24\technet\Setup_Workstations\Setup_Becket_Workstation\,,AzureAd
+BecketMA,,118,\\192.168.1.24\technet\Setup_Workstations\Setup_Becket_Workstation\,\\192.168.1.24\technet\Scripts\setupConfigs\config_Printers_BecketMA.csv,AzureAd
+BecketME,,119,\\192.168.1.24\technet\Setup_Workstations\Setup_Becket_Workstation\,\\192.168.1.24\technet\Scripts\setupConfigs\config_Printers_BecketME.csv,AzureAd
+BecketNH,,120,\\192.168.1.24\technet\Setup_Workstations\Setup_Becket_Workstation\,\\192.168.1.24\technet\Scripts\setupConfigs\InstallPrinters_BecketNH.csv,AzureAd
+MVTC,,123,\\192.168.1.24\technet\Setup_Workstations\Setup_MVTC_Workstation\,\\192.168.1.24\technet\Scripts\setupConfigs\config_Printers_MVTC.csv,AzureAd
+MPA,,121,\\192.168.1.24\technet\Setup_Workstations\Setup_Becket_Workstation\,\\192.168.1.24\technet\Scripts\setupConfigs\config_Printers_MPA.csv,AzureAd
+MPAC,,146,\\192.168.1.24\technet\Setup_Workstations\Setup_Becket_Workstation\,\\192.168.1.24\technet\Scripts\setupConfigs\config_Printers_MPAC.csv,AzureAd

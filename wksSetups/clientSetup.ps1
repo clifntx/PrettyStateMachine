@@ -10,7 +10,7 @@
 param(
     $configPath= "DEFAULT", #$(throw "No config provided.  Please include the path to a config csv."),
     $pushPath = "C:\Push\",
-    $logLevel = 1
+    $logLevel = -1
     )
 
 function log ($str, $fc="white"){
@@ -159,21 +159,37 @@ function installNableAgent($customerId) {
     log "Calling installNableAgent(`n>>> customerId=$customerId`n>>> )" "darkgray"
     $serverAddress = "central.allaccess365.com"
     #WindowsAgentSetup.exe /s /v" /qn CUSTOMERID=$customerId SERVERADDRESS=$serverAddress CUSTOMERSPECIFIC=1 SERVERPROTOCOL=HTTPS SERVERPORT=443 "
-    log "!! TODO: Write function to install Nable agent" "red"
+    log "...serveraddress=$serverAddress" "gray"
+    log "...opening a window for installing Nable agent" "gray"
+    $file = "WindowsAgentSetup.exe"
+    $args = "/s /v`" /qn CUSTOMERID=$customerId SERVERADDRESS=$serverAddress CUSTOMERSPECIFIC=1 SERVERPROTOCOL=HTTPS SERVERPORT=443`""
+    $command = "'WindowsAgentSetup.exe /s /v' /qn CUSTOMERID=$customerId SERVERADDRESS=$serverAddress CUSTOMERSPECIFIC=1 SERVERPROTOCOL=HTTPS SERVERPORT=443;"
+    log "...invoking command `"$command`"" "gray"
+    #& {control /name Microsoft.BitLockerDriveEncryption; timeout /t -1;}
+    & {$command; timeout /t -1;}
+    log "!! TODO: Write function to install Nable agent" "yellow"
+    }
 
+function turnOnBitlocker {
+    log "Calling turnOnBitlocker(`n>>> no args`n>>> )" "darkgray"
+    & {control /name Microsoft.BitLockerDriveEncryption}
     }
 
 function clientQA($config, $scriptPath) {
     log "Calling clientQA(`n>>> config=$config`n>>> scriptPath=$scriptPath`n>>> )" "darkgray"
-    #."\\192.168.1.24\technet\Setup_Workstations\main" -logLevel $logLevel
-    .$scriptPath\QAStandardSetup -logLevel $logLevel
-    log "!! TODO: Write Client QA function." "red"
+    log "...opening a window for QA" "gray"
+    $fileName = "$scriptPath\QAStandardSetup.ps1"
+    $logLevel = $script:logLevel
+    log "fileName=$fileName"
+    log "Calling {Start-Process PowerShell.exe -ArgumentList '-ExecutionPolicy Bypass -File $fileName -logLevel 1' -Verb RunAs}" "yellow"
+    & {Start-Process PowerShell.exe -ArgumentList "-ExecutionPolicy Bypass -File $fileName -logLevel $logLevel" -Verb RunAs}
+    #PowerShell.exe -Command "& {Start-Process PowerShell.exe -ArgumentList '-ExecutionPolicy Bypass -File \\192.168.1.24\technet\Scripts\PrinterInstalls\InstallPrinters.ps1 -printerCsv \\192.168.1.24\technet\Setup_Workstations\Setup_MPA_Workstation\push\printerDrivers\config_Printers_MPA.csv' -Verb RunAs}"
     }
 
 function main ($configPath, $pushPath, $scriptPath) {
     log "Calling main(`n>>> configPath=$configPath`n>>> )" "darkgray"
     # -1. Run main script
-    runMainScript
+    #runMainScript
     # 0. Import config from csv
     $c = buildConfig $configPath 
     # 1. move push nd user
@@ -184,9 +200,11 @@ function main ($configPath, $pushPath, $scriptPath) {
     joinToDomain $c.domain
     # 4. install special software
     installClientSoftware $c.install_these
-    # 5. install printers
+    # 5. Turn on Bitlocker (must be done after secure boot is enabled)
+    turnOnBitlocker
+    # 6. install printers
     installPrinters $c.pathToPrinterConfig
-    # 6. QA the above
+    # 7. QA the above
     clientQA $c $scriptPath
     }
 
@@ -196,7 +214,9 @@ $PUSH_PATH = "C:\Push";
 $SCRIPT_PATH = "\\192.168.1.24\technet\Scripts\wksSetups"
 $UNIPUSH_PATH = "\\192.168.1.24\technet\Setup_Workstations\UniversalPushFolder\Push";
 
-main $configPath $pushPath
+main $configPath $pushPath $SCRIPT_PATH
+#$c = buildConfig $configPath
+#clientQA $c $SCRIPT_PATH
 
 # TODO: Modify config to pull all configs from a single spreadsheet.  
 #    Will require a method like...

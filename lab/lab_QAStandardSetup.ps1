@@ -1,5 +1,5 @@
 ﻿param(
-    [int]$logLevel = 1,
+    [int]$logLevel = -1,
     [string]$PUSH_PATH = "C:\Push",
     [string]$SCRIPT_PATH = "\\192.168.1.24\technet\Setup_Workstations",
     [string]$UNIPUSH_PATH = "\\192.168.1.24\technet\Setup_Workstations\UniversalPushFolder\Push"
@@ -123,7 +123,7 @@ function qaComputerName {
 
 function checkWindowsActivationStatus {
     log "Calling checkWindowsActivationStatus `n>>> no args`n>>> )" "darkgray"
-    $checks = @('Windows(R)', 'Office')
+    $checks = @('Windows(R)%', 'Office%')
     
     $res = @()
     foreach ($c in $checks) {
@@ -131,7 +131,7 @@ function checkWindowsActivationStatus {
         $r = @()
         #build wpa
         try {
-            $q = "SELECT Name,LicenseStatus FROM SoftwareLicensingProduct WHERE Name LIKE '$c%'"
+            $q = "SELECT Name,LicenseStatus FROM SoftwareLicensingProduct WHERE Name LIKE '$c'"
             log "..constructed query: $q" "gray"  
             $wpa = Get-WmiObject -Query $q -ErrorAction Stop
             log "..acquired `$wpa for $c with length $($wpa.Length)" "gray"  
@@ -359,7 +359,7 @@ function main {
     log "!!" "green"
     log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" "green"
 }
-
-main
-
-pause
+cls
+#main
+qaWindowsActivationStatus
+#pause

@@ -1,0 +1,1 @@
+netsh wlan add profile filename="Wireless Network Connection-MPAWNET.xml" interface="Wireless Network Connection" user=current

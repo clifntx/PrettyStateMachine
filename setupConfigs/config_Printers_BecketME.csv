@@ -1,0 +1,13 @@
+﻿location,driverName,ip,color
+ALTC (Admin. Office) ,Xerox Global Print Driver PCL6,192.168.34.31 ,Color
+ALTC (Conference Room) ,Xerox Global Print Driver PCL6,192.168.34.44 ,Color
+Art Room,Canon MX490,192.168.34.59,Color
+ALTC Main Office,Xerox AltaLink B8055 PCL6,192.168.34.60,Color
+Auburn ,Xerox Global Print Driver PCL6,10.5.3.253,Color
+Lewiston BW,Xerox Global Print Driver PCL6,10.10.109.116,Color
+Lewiston Conference Room,Xerox Global Print Driver PCL6,10.10.109.127,Color
+Belgrade,Xerox Global Print Driver PCL6,192.168.11.220 ,Color
+CMLC Activities Building WorkCentre5845 ,Xerox Global Print Driver PCL6,192.168.11.167 ,Color
+CMLC Activities Building  Workcentre5955  ,Xerox Global Print Driver PCL6,192.168.11.143 ,Color
+Gorham ,Xerox Global Print Driver PCL6,10.5.2.12,Color
+Litchfield ,Xerox Global Print Driver PCL6,10.5.4.12,Color
