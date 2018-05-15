@@ -84,10 +84,10 @@ function convertCsvToLod($csvPath) {
     log "...imported [$($csv.Length)] rows." "Gray"
     foreach ($row in $csv) {        
         $p = @{
-            "location"=($row.location);
+            "location"=($row.location).Trim();
             "driverName"=($row.driverName).Trim();
             "ip"=($row.ip).Trim();
-            "color"=($row.color);
+            "color"=($row.color).Trim();
             }
         $printers += $p
     }

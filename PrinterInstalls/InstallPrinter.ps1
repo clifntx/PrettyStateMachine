@@ -64,11 +64,11 @@ function log ($str, $fc="white"){
 function buildPrinter($location, $driver, $ip, $color) {
     log "Calling buildPrinter(`n>>> -location `"$location`"`n>>> -driver $driver`n>>> -ip $ip`n>>> -color $color`n>>> )" "darkgray"
     $p = @{
-        name = "$location ($color) - $driver";
-        loc = $location;
-        driver = $driver;
-        ip = $ip;
-        colo = $color;
+        name = "$($location.Trim()) ($color) - $($driver.Trim())";
+        loc = $location.Trim();
+        driver = $driver.Trim();
+        ip = $ip.Trim();
+        color = $color.Trim();
     }
     log "...returning printer: [$($p.name)] $p" "gray"
     return $p

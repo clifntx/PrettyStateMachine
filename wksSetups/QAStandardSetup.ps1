@@ -26,8 +26,8 @@ function log ($str, $fc="white"){
         }
     if ($priority -ge $logLevel) {
         write-host $str -ForegroundColor $fc
-        }
     }
+}
 
 function checkForSecureBoot {
     log "Calling keysAreCorrect(`n>>> no args`n>>> )" "darkgray"    
@@ -276,34 +276,70 @@ function qaWifi {
         }
     }
 
-function checkInstalledPrograms {
+function checkInstalledPrograms ($shouldBeInstalled) {
     log "Calling checkInstalledPrograms `n>>> no args`n>>> )" "darkgray"
+    $apps = Get-WmiObject -Class Win32_Product 
+    $apps64 = Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | 
+        Select-Object DisplayName, DisplayVersion, Publisher, InstallDate
+    $n = 0;
+    $missing = @();
+    $present = @();
+    $res = $true;
+    foreach ($a in $shouldBeInstalled) {
+        if (($apps.Name).contains($a) -or ($apps64.DisplayName.contains($a))) {
+            #log "!!       $a" "green"; 
+            $present += $a;
+        } else {
+            #log "!!       $a" "red"; 
+            $res = $false;
+            $missing += $a;
 
+            }            
+        $n += 1 
     }
+    return @{
+        res = $res;
+        present = $present;
+        missing = $missing;
+    }
+    #Query installed 32-bit programs:
+    #  Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName, DisplayVersion, Publisher, InstallDate | Format-Table –AutoSize
+    #Query installed 64-bit programs: 
+    #  Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName, DisplayVersion, Publisher, InstallDate | Format-Table –AutoSize
+}
+function checkForSecurityDefender {
+    log "Calling checkForSecurityDefender `n>>> no args`n>>> )" "darkgray"
+    $app = "Security Manager AV Defender"
+    $apps64 = Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | 
+        Select-Object DisplayName, DisplayVersion, Publisher, InstallDate
+    return (($apps64.DisplayName -contains $app), ($apps64 | where {$_.DisplayName.contains($app)}))
+}
 function qaInstalledPrograms {
     log "Calling qaInstalledPrograms `n>>> no args`n>>> )" "darkgray"
-    log "!! [ ] Chrome, Firefox, and AV are installed (Webroot or Security Manager)"
     $shouldBeInstalled = @(
         "Adobe AIR",
         "Adobe Acrobat Reader DC",
         "Office 16 Click-to-Run Licensing Component"
+        "Microsoft Office 365 ProPlus - en-us"
         "Windows Agent",
-        "Google Chrome".
-        ""
+        "Google Chrome",
+        "Mozilla Firefox 60.0 (x64 en-US)",
+        "Security Manager AV Defender"
         )
-    # process called "NableAVDBridge"
-    #  (Get-AppxPackage).Name |sort
-    $apps = Get-WmiObject -Class Win32_Product 
-    $n = 0;
-    foreach ($a in $shouldBeInstalled) {
-        if (($apps.Name).contains($a)) {
-            log "!!       $a" "green"; 
-        } else {
-            log "!!       $a" "red"; 
-            }            
-        $n += 1 
+    $res = checkInstalledPrograms $shouldBeInstalled
+    if ($res.res) {
+        log "!! [X] Chrome, Firefox, and AV are installed (Webroot or Security Manager)" "green"
+        foreach ($a in $res.present) {
+            log "           $a" "green"
+        }
+    } else {
+        log "!! [ ] Chrome, Firefox, and AV are installed (Webroot or Security Manager)" "red"        
+        foreach ($a in $res.missing) {
+            log "           $a" "red"
         }
     }
+    return $res.res
+}
 
 function checkOutlook {
     & 'C:\Program Files (x86)\Microsoft Office\root\Office16\OUTLOOK.EXE'
