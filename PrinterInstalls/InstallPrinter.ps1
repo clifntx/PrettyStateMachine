@@ -1,9 +1,11 @@
-﻿Param(
-    [string]$printerCsv = $(throw ">> ERROR: Please include a path to a printer csv.  ex: powershell.exe .\InstallPrinters.ps1 -logLevel -1 -printerCsv c:\Push\printerDrivers\Printers_MVTC.csv"),
-    [string]$printerCsvUrl= "",
+﻿#param must be the first statement in your script
+Param(
+    [string]$location = $(throw ">> ERROR: Please include a valid location argument.  ex: -location 'Downstairs Copier' "),
+    [string]$driver = $(throw ">> ERROR: Please include a valid location driver.  ex: -driver 'PCL6 V4 Driver for Universal Print' "),
+    [string]$ip = $(throw ">> ERROR: Please include a valid ip argument.  ex: -ip '10.0.0.99' "),
+    [string]$color = "Color",
     [int]$logLevel = 0,
-    [string]$pushRoot = "c:\push\printerDrivers",
-    [hashtable[]]$driverMap
+    [string]$pushRoot = "c:\push\printerDrivers"
     )
 $DRIVER_URL_MAP = @(
         @{"driver"="HP Universal Printing PCL 6"; "path"="\HP\HPUniversalPCL6\hpcu215u.inf"; "url" = "https://s3.amazonaws.com/aait/HP.zip"},
@@ -12,18 +14,17 @@ $DRIVER_URL_MAP = @(
         @{"driver"="KONICA MINOLTA C3850 Series PCL6"; "path"="\KonicaMinolta\BizhubC3850fs_MFP_Win_x64\PCL\english\KOBJ_J__.inf"; "url" = "https://s3.amazonaws.com/aait/KonicaMinolta.zip"},
         @{"driver"="KX DRIVER for Universal Printing"; "path"="\Kyocera\KXPrintDriverv7.3.1207\64bit\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/KXPrintDriverv7.3.1207.zip"},
         @{"driver"="Kyocera ECOSYS M2535dn KX"; "path"="\Kyocera\KXPrintDriverv7.3.1207\64bit\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/KXPrintDriverv7.3.1207.zip"},
-        @{"driver"="Kyocera TASKalfa 5551ci"; "path"="\Kyocera\xxx1i_xxx1ci_PCL_Uni\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/Kyocera_xxx1i_xxx1ci_PCL_Uni.zip"},
+        @{"driver"="Kyocera TASKalfa 5551ci KX"; "path"="\Kyocera\KyoceraTASKalfa_5551ci\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/KyoceraTASKalfa_5551ci.zip"},
         @{"driver"="Kyocera TASKalfa 4501i"; "path"="\Kyocera\xxx1i_xxx1ci_PCL_Uni\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/Kyocera_xxx1i_xxx1ci_PCL_Uni.zip"},
         @{"driver"="Kyocera TASKalfa 3501i"; "path"="\Kyocera\xxx1i_xxx1ci_PCL_Uni\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/Kyocera_xxx1i_xxx1ci_PCL_Uni.zip"},
         @{"driver"="Kyocera TASKalfa 3051ci"; "path"="\Kyocera\xxx1i_xxx1ci_PCL_Uni\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/Kyocera_xxx1i_xxx1ci_PCL_Uni.zip"},
-        @{"driver"="PCL6 V4 Driver for Universal Print"; "path"="\Savin\SavinUniversal\disk1\r4600.inf"; "url" = "https://s3.amazonaws.com/aait/Savin.zip"}
+        @{"driver"="PCL6 V4 Driver for Universal Print"; "path"="\Savin\SavinUniversal\disk1\r4600.inf"; "url" = "https://s3.amazonaws.com/aait/Savin.zip"},
+        @{"driver"="Savin Universal Printing PCL6"; "path"="\Savin\SavinUniversal\disk1\r4600.inf"; "url" = "https://s3.amazonaws.com/aait/Savin.zip"},     
         @{"driver"="TOSHIBA Universal Printer 2"; "path"="\Toshiba\64bit\eSf6u.inf"; "url" = "https://s3.amazonaws.com/aait/Toshiba_64bit.zip"},
         @{"driver"="Xerox Global Print Driver PCL6"; "path"="\Xerox\X-GPD_5.404.8.0_PCL6_x64_Driver.inf\x2UNIVX.inf"; "url" = "https://s3.amazonaws.com/aait/Xerox.zip"},
         @{"driver"="Xerox AltaLink B8055 PCL6"; "path"="\Xerox\ALB80XX_5.528.10.0_PCL6_x64_Driver.inf\x2ASNOX.inf"; "url" = "https://s3.amazonaws.com/aait/Xerox.zip"}
         )
 
-KONICA MINOLTA 4750 Series PCL6	
-KONICA MINOLTA C3110 PCL6	C:\Push\KonicaMinolta\C3110\bizhubC3110_Win10_PCL_PS_XPS_FAX_v1.2.1.0\bizhubC3110_Win10_PCL_PS_XPS_FAX_v1.2.1.0\Drivers\Win_x64\KOBK4J__.inf
 $driverMap = $DRIVER_URL_MAP
 
 
@@ -60,6 +61,19 @@ function log ($str, $fc="white"){
         }
     }
 
+function buildPrinter($location, $driver, $ip, $color) {
+    log "Calling buildPrinter(`n>>> -location `"$location`"`n>>> -driver $driver`n>>> -ip $ip`n>>> -color $color`n>>> )" "darkgray"
+    $p = @{
+        name = "$location ($color) - $driver";
+        loc = $location;
+        driver = $driver;
+        ip = $ip;
+        colo = $color;
+    }
+    log "...returning printer: [$($p.name)] $p" "gray"
+    return $p
+}
+
 function convertDriverMap($pushRoot, $driverMap) {
 # adds full driver path to driverMap.driverPath
     log "Calling convertDriverMap(`n>>> -pushRoot `"$pushRoot`"`n>>> -driverMap $driverMap`n>>> )" "darkgray"
@@ -67,31 +81,10 @@ function convertDriverMap($pushRoot, $driverMap) {
     log "Converting ($($newDriverMap.Length)) driver paths" "Gray"
     foreach ($n in (0..($newDriverMap.Length-1))) {
         $newDriverMap[$n].path = $pushRoot+$driverMap[$n].path
-        log "...($n) Converted driver path for driver [$($newDriverMap[$n].driver)] to [$($newDriverMap[$n].path)]" "gray"
+        #log "...($n) Converted driver path for driver [$($newDriverMap[$n].driver)] to [$($newDriverMap[$n].path)]" "gray"
     }
+    log "...returning newDriverMap: $newDriverMap" "gray"
     return $newDriverMap
-}
-
-function convertCsvToLod($csvPath) {
-    log "Calling convertCsvToLod(`n>>> -csvPath `"$csvPath`"`n>>> )" "darkgray"
-    $printers = @()
-    log "Converting Printer CSV [$csvPath] to LOD" "Gray"
-    if($csvPath.Substring(0,2) -ne "\\") {
-        $csvPath = "$(Resolve-Path $csvPath)"
-        }
-    log "...full csv path [$csvPath]" "Gray"
-    $csv = import-csv $csvPath
-    log "...imported [$($csv.Length)] rows." "Gray"
-    foreach ($row in $csv) {        
-        $p = @{
-            "location"=($row.location);
-            "driverName"=($row.driverName);
-            "ip"=($row.ip);
-            "color"=($row.color);
-            }
-        $printers += $p
-    }
-    return $printers
 }
 
 function getDriverInfo($driverName, $driverMap) {
@@ -108,6 +101,7 @@ function getDriverInfo($driverName, $driverMap) {
             return $driver
         } else {
             log "...Failed to locate [$driverName] in driverMap." "Red"
+            log "...driver = $driver"
             return $false
             }
 }
@@ -292,8 +286,8 @@ function setPrinterColor($printerName, $color) {
     return $true
     }
 
-function downloadAndInstallPrinter($driverUrl, $downloadPath, $extractPath, $printerName, $printer, $driverPath) {
-    log "Calling downloadAndInstallPrinter( `n>>> -driverUrl $driverUrl`n>>> -downloadPath $downloadPath`n>>> -extractPath $extractPath`n>>> -printerName $printerName`n>>> -printer $printer`n>>> -driverPath $driverPath`n>>> )" "darkgray"
+function downloadAndInstallPrinter($driverUrl, $downloadPath, $extractPath, $printer, $driverPath) {
+    log "Calling downloadAndInstallPrinter( `n>>> -driverUrl $driverUrl`n>>> -downloadPath $downloadPath`n>>> -extractPath $extractPath`n>>> -printer $printer`n>>> -driverPath $driverPath`n>>> )" "darkgray"
     #install driver
     if (Test-Path $driverPath) {
         log "...Path [$driverPath] already exists.  Doing nothing." "gray"
@@ -311,75 +305,64 @@ function downloadAndInstallPrinter($driverUrl, $downloadPath, $extractPath, $pri
         log "...Time taken for extraction: $((Get-Date).Subtract($start_time).Seconds) second(s)" "Gray"
         }
     #install printer
-    if (isPrinterInstalled -name $printerName -ip $printer.ip -driver $printer.driverName) {
-        log "...Printer already installed [$printer.location].  Doing nothing." "gray"
+    if (isPrinterInstalled -name $printer.name -ip $printer.ip -driver $printer.driver) {
+        log "...Printer already installed [$($printer.location)].  Doing nothing." "gray"
     } else {
-        log "...Removing any duplicate printers of name [$printerName]" "gray"
-        if (!(removePrinter($printerName))){
-            log ">> WARNING: Could not remove duplicate printer [$printerName]" "yellow"
+        log "...Removing any duplicate printers of name [$($printer.name)]" "gray"
+        if (!(removePrinter($printer.name))){
+            log ">> WARNING: Could not remove duplicate printer [$($printer.name)]" "yellow"
         }
-        if (!(installPrinter $printerName $printer.location $printer.ip $printer.driverName $driverPath)){
-            log ">> FAIL: Could not install printer [$printerName]" "red"
+        if (!(installPrinter $printer.name $printer.location $printer.ip $printer.driver $driverPath)){
+            log ">> FAIL: Could not install printer [$($printer.name)]" "red"
             return $false
             }
-        waitForPrinterInstallToComplete $printerName
-        log "...Setting printer [$printerName] color settings to [$($p.color)]" "Gray"
-        if (!(setPrinterColor $printerName $p.color)) {
-            log ">> FAIL: Could not configure printer color settings for [$printerName]." "red"
+        waitForPrinterInstallToComplete $printer.name
+        log "...Setting printer [$($printer.name)] color settings to [$($printer.color)]" "Gray"
+        if (!(setPrinterColor $printer.name $printer.color)) {
+            log ">> FAIL: Could not configure printer color settings for [$($printer.name)]." "red"
             return $false
             }
         }
     return $true
 }
 
-function main($pushRoot, $printerCsv, $driverMap=$DRIVER_URL_MAP) {
+function main($pushRoot, $location, $driver, $ip, $color, $driverMap=$DRIVER_URL_MAP) {
     $start_time = Get-Date
-    log "Calling main(`n>>> -start_time $start_time`n>>> -pushRoot $pushRoot`n>>> -printerCsv $printerCsv`n>>> )" "darkgray"
+    log "Calling main(`n>>> -pushRoot=$pushRoot`n>>> -location=$location`n>>> -driver=$driver`n>>> -ip=$ip`n>>> -color=$color`n>>> -driverMap=$driverMap`n>>> )" "darkgray"
     log "Starting [$(Get-Date)]" "white"
     $printerInstalledTally = 0
     $n = 1
     $downloadPath = "$pushRoot\printerTemp.zip"
     $extractPath = $pushRoot
     if(!(Test-Path $pushRoot)) { mkdir $pushRoot; }
-    $printers = convertCsvToLod $printerCsv
+    $p = buildPrinter $location $driver $ip $color
     $driverMap = convertDriverMap $pushRoot $driverMap
-    foreach ($p in $printers) {
-        $printerName = "$($p.location) ($($p.color)) - $($p.driverName)" 
-        log "($n) Installing printer [$printerName]" "white"
-        $driver = (getDriverInfo $($p.driverName) $driverMap)
-        if ($driver) {
-            $res = downloadAndInstallPrinter -driverUrl $driver.url -downloadPath $downloadPath -extractPath $extractPath -printerName $printerName -printer $p -driverPath $driver.path
-        } else {          
-            $res = $false
+
+    log "($n) Installing printer [$($p.name)]" "white"
+    $driver = (getDriverInfo $($p.driver) $driverMap)
+    if ($driver) {
+        $res = downloadAndInstallPrinter -driverUrl $driver.url -downloadPath $downloadPath -extractPath $extractPath -printer $p -driverPath $driver.path
+    } else {          
+        $res = $false
+    }
+    if($res){
+        $rcolor = "white"
+    } else {
+        $rcolor = "Red"
         }
-        if($res){
-            $rcolor = "white"
-            $printerInstalledTally += 1
-        } else {
-            $rcolor = "Red"
-            }
-        log "...Is [ $($p.location) ($($p.color)) - $($p.driverName) ] installed?: $res" $rcolor
-        log "...Time taken for printer install [$printerName]: $((Get-Date).Subtract($start_time).TotalSeconds) second(s)" "gray"
-        $n +=1
-        }
+    log "...Is [ $($p.location) ($($p.color)) - $($p.driver) ] installed?: $res" $rcolor
+    log "...Time taken for printer install [$($p.name)]: $((Get-Date).Subtract($start_time).TotalSeconds) second(s)" "gray"
+
     $delta = $((Get-Date).Subtract($start_time))
     $secondsElapsed = 0+(($delta.Minutes)*60)+($delta.Seconds)
     log "Stopping [$(Get-Date)]" "white"
     log "---------------------------------------------------------" "Gray"
     log "|"
-    log "|   Successfully installed $printerInstalledTally of $($printers.Length) printers in $secondsElapsed seconds." "Green"
+    log "|   Successfully installed $($p.name) printer in $secondsElapsed seconds." "Green"
     log "|"
     log "---------------------------------------------------------" "Gray"
-    log ""
-    $gp = get-printer
-    log "[Total Installed Printers]:  [$($gp.Length)]" "Green"
-    $n = 0
-    $gp.Name | foreach {
-        $n+=1
-        log "($n) $_" "Green"
-        }
     }
 
 clear
-main $pushRoot $printerCsv $driverMap
-timeout /t -1
+main $pushRoot $location $driver $ip $color $driverMap
+#timeout /t -1

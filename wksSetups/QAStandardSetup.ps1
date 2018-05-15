@@ -349,11 +349,10 @@ function main {
     log "!! [ ] SharePoint sync complete"
     #log "!! [ ] Chrome, Firefox, and Nable agent are installed"
     qaInstalledPrograms
-    log "!! [] AV is installed (Webroot or Security Manager)"
+    log "!! [ ] AV is installed (Webroot or Security Manager)"
     log "!! [ ] Office shortcuts are on desktop or in start menu"
     # log "!! [ ] Outlook is configured for user"
     #qaOutlook
-    log "!! [ ] Office is activated"
     log "!! [ ] Office is connected to correct account"
     log "!! [ ] COMPLETE QA SCRIPT!!!" "red"
     log "!!" "green"

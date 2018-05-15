@@ -65,7 +65,6 @@ function buildConfig($configPath) {
     $config['pathToPrinterConfig'] = $csv[0].pathToPrinterConfig
     $config['domain'] = $csv[0].domain
     $config['install_these'] = @()
-    $config['customerId'] = $csv[0].customerId
     foreach ($r in $csv) {
         $config.install_these += $r.install_these
         }
@@ -148,8 +147,8 @@ function moveClientDirs($pathToSetupFolder, $pushPath) {
 
     # No really, move the Users folder
     log "...no really, copy the Users folder: [$($pathToSetupFolder+"Users")] > [$($path+"Users")]" "gray"
-    copy-item ($pathToSetupFolder + "Users") ($localPath + "Users") -Recurse -Force
-
+    copyDir $($pathToSetupFolder+"Users") $($path+"Users")
+    
     # verify that move was successful
     foreach ($dir in $dirs) {
         if (!(test-path "$pathToSetupDir\$dir")) {
@@ -192,7 +191,7 @@ function installNableAgent($customerId) {
     #$args = "/s /v`" /qn CUSTOMERID=$customerId SERVERADDRESS=$serverAddress CUSTOMERSPECIFIC=1 SERVERPROTOCOL=HTTPS SERVERPORT=443`""
     if ($dl = download $driverUrl $downloadPath) {
         log "...agent installer downloaded.  Installing." "gray"
-        $command = "$downloadPath /paasive /norestart;"
+        $command = "'$downloadPath /s /v' /qn;"
         #$command = "'WindowsAgentSetup.exe /s /v' /qn CUSTOMERID=$customerId SERVERADDRESS=$serverAddress CUSTOMERSPECIFIC=1 SERVERPROTOCOL=HTTPS SERVERPORT=443;"
         log "...running [{ $command }]." "gray"
         $scriptBlock = [Scriptblock]::Create($command)
@@ -245,9 +244,11 @@ $PUSH_PATH = "C:\Push";
 $SCRIPT_PATH = "\\192.168.1.24\technet\Scripts\wksSetups"
 $UNIPUSH_PATH = "\\192.168.1.24\technet\Setup_Workstations\UniversalPushFolder\Push";
 
-main $configPath $pushPath $SCRIPT_PATH
+#main $configPath $pushPath $SCRIPT_PATH
 #$c = buildConfig $configPath
 #clientQA $c $SCRIPT_PATH
+
+installNableAgent "121"
 
 # TODO: Modify config to pull all configs from a single spreadsheet.  
 #    Will require a method like...

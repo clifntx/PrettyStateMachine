@@ -99,6 +99,7 @@ timeout /t 5 /nobreak
 :: Define variables
 	set location=Clearview
 	set IP=192.168.141.5
+	set port=IP_192.168.141.5
 :: Install Port 
 cscript c:\Windows\System32\Printing_Admin_Scripts\en-US\prnport.vbs -a -r IP_%IP% -h %IP% -o raw -n 9100
 ::take a breath
