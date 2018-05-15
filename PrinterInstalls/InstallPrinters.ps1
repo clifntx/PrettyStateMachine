@@ -85,8 +85,8 @@ function convertCsvToLod($csvPath) {
     foreach ($row in $csv) {        
         $p = @{
             "location"=($row.location);
-            "driverName"=($row.driverName);
-            "ip"=($row.ip);
+            "driverName"=($row.driverName).Trim();
+            "ip"=($row.ip).Trim();
             "color"=($row.color);
             }
         $printers += $p

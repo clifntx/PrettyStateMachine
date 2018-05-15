@@ -291,7 +291,7 @@ function main ($uniPushPath, $pushPath, $scriptPath) {
     #install all several applications
     installSystemUpdates
     #QA all changes
-    log "Running QA script [$scriptPath\QAStandardSetup]" "White"
+    #log "Running QA script [$scriptPath\QAStandardSetup]" "White"
     #Disabling scripting
     #changeScriptingPolicy "restricted"
     }
@@ -306,9 +306,16 @@ $UNIPUSH_PATH = "\\192.168.1.24\technet\Setup_Workstations\UniversalPushFolder\P
 
 installSystemUpdates
 
-log "Automation complete.  Reboot computer." "white"
-#log "Automation complete.  Press any key to reboot." "white"
-#timeout /t -1
-#Restart-Computer 
+log "Automation complete.  Next steps..." "white"
+log ""
+log "1. Reboot" "white"
+log "2. Boot to BIOS (F1)" "white"
+log "3. Enable Secure Boot (Security menu)" "white"
+log "4. Boot to Windows." "white"
+log "5. Run clientSetup script." "white"
+log "" 
+log "Press any key to reboot." "white"
+timeout /t -1
+Restart-Computer 
 
 #\\192.168.1.24\technet\Scripts\wksSetups\SetWinUpdateUXKeys.ps1

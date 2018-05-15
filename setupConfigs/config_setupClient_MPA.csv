@@ -1,2 +1,2 @@
 ﻿install_these,customerId,pathToSetupFolder,pathToPrinterConfig,Domain
-,121,\\192.168.1.24\technet\Setup_Workstations\Setup_Becket_Workstation\,\\192.168.1.24\technet\Scripts\setupConfigs\config_Printers_MPA.csv,AzureAd
+,121,\\192.168.1.24\technet\Setup_Workstations\Setup_Becket_Workstation\,\\192.168.1.24\technet\Scripts\setupConfigs\config_Printers_Orford.csv,Orford.becket.local

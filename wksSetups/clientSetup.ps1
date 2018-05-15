@@ -204,6 +204,13 @@ function installNableAgent($customerId) {
 function turnOnBitlocker {
     log "Calling turnOnBitlocker(`n>>> no args`n>>> )" "darkgray"
     & {control /name Microsoft.BitLockerDriveEncryption}
+    
+    log "TODO:" "yellow"
+    log "#Enablabe BitLocker" "yellow"
+    log "Enable-BitLocker" "yellow"
+    log "#Save bitlocker keys to NAS;" "yellow"
+    log "`$keys = (get-bitlockervolume).KeyProtector" "yellow"
+    log "#Save bitlocker keys to ITGlue" "yellow"
     }
 
 function clientQA($config, $scriptPath) {
@@ -213,9 +220,8 @@ function clientQA($config, $scriptPath) {
     $logLevel = $script:logLevel
     log "fileName=$fileName"
     log "Calling {Start-Process PowerShell.exe -ArgumentList '-ExecutionPolicy Bypass -File $fileName -logLevel 1' -Verb RunAs}" "yellow"
-    & {Start-Process PowerShell.exe -ArgumentList "-ExecutionPolicy Bypass -File $fileName -logLevel $logLevel" -Verb RunAs}
-    #PowerShell.exe -Command "& {Start-Process PowerShell.exe -ArgumentList '-ExecutionPolicy Bypass -File \\192.168.1.24\technet\Scripts\PrinterInstalls\InstallPrinters.ps1 -printerCsv \\192.168.1.24\technet\Setup_Workstations\Setup_MPA_Workstation\push\printerDrivers\config_Printers_MPA.csv' -Verb RunAs}"
-    }
+    & {Start-Process PowerShell.exe -ArgumentList "-ExecutionPolicy Bypass -File $fileName -logLevel 1" -Verb RunAs}
+   }
 
 function main ($configPath, $pushPath, $scriptPath) {
     log "Calling main(`n>>> configPath=$configPath`n>>> )" "darkgray"
@@ -236,6 +242,7 @@ function main ($configPath, $pushPath, $scriptPath) {
     # 6. install printers
     installPrinters $c.pathToPrinterConfig
     # 7. QA the above
+    timeout /t 30
     clientQA $c $scriptPath
     }
 
