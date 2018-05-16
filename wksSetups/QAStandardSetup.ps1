@@ -276,6 +276,94 @@ function qaWifi {
         }
     }
 
+
+function Set-KnownFolderPath {
+    <#
+    .SYNOPSIS
+        Sets a known folder's path using SHSetKnownFolderPath.
+    .PARAMETER Folder
+        The known folder whose path to set.
+    .PARAMETER Path
+        The path.
+    #>
+    Param (
+            [Parameter(Mandatory = $true)][ValidateSet('Desktop', 'Documents', 'Downloads', 'Music', 'Pictures')][string]$KnownFolder,
+            [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    # Define known folder GUIDs
+    $KnownFolders = @{
+        'Desktop' = 'B4BFCC3A-DB2C-424C-B029-7FE99A87C641';
+        'Documents' = 'FDD39AD0-238F-46AF-ADB4-6C85480369C7';
+        'Downloads' = '374DE290-123F-4565-9164-39C4925E467B';
+        'Favorites' = '1777F761-68AD-4D8A-87BD-30B759FA33DD';
+        'Music' = '4BD8D571-6D19-48D3-BE97-422220080E43';
+        'Pictures' = '33E28130-4E1E-4676-835A-98395C3BC3BB';
+    }
+
+    # Define SHSetKnownFolderPath if it hasn't been defined already
+    $Type = ([System.Management.Automation.PSTypeName]'KnownFolders').Type
+    if (-not $Type) {
+        $Signature = @'
+[DllImport("shell32.dll")]
+public extern static int SHSetKnownFolderPath(ref Guid folderId, uint flags, IntPtr token, [MarshalAs(UnmanagedType.LPWStr)] string path);
+'@
+        $Type = Add-Type -MemberDefinition $Signature -Name 'KnownFolders' -Namespace 'SHSetKnownFolderPath' -PassThru
+    }
+
+    # Validate the path
+    if (Test-Path $Path -PathType Container) {
+        # Call SHSetKnownFolderPath
+        return $Type::SHSetKnownFolderPath([ref]$KnownFolders[$KnownFolder], 0, 0, $Path)
+    } else {
+        throw New-Object System.IO.DirectoryNotFoundException "Could not find part of the path $Path."
+    }
+}
+
+function moveSystemFoldersToOneDrive{
+    #get OneDrive folder
+    $odd = (dir $env:USERPROFILE).Name | where {$_ -match 'OneDrive -'}
+    $sfs = @("Desktop", "Documents", "Pictures")
+    foreach ($sf in $sfs) {
+        Set-KnownFolderPath -KnownFolder $sf -Path "$odd\$sf"
+    }
+}
+function checkThatSystemFoldersAreMovedToOneDrive {
+    log "Calling checkThatSystemFoldersAreMovedToOneDrive `n>>> no args`n>>> )" "darkgray"    
+    $flag = $true
+    $odd = (dir $env:USERPROFILE).Name | where {$_ -match 'OneDrive -'}
+    $sfs = @("Desktop", "Documents", "Pictures")
+    foreach ($sf in $sfs) {
+        $dir = "$odd\$sf"
+        if (test-path $dir) {
+            log "...located $dir" "gray"
+        } else {
+            log "...could not locate $dir" "red"            
+            $flag = $false
+        }
+    }
+    return $flag
+}
+
+function qaOneDrive {
+    #get OneDrive folder
+    $odd = (dir $env:USERPROFILE).Name | where {$_ -match 'OneDrive -'}
+    if ($odd.Length -gt 0) {
+        log "!! [X] OneDrive set up" "green"
+    } else {
+        log "!! [ ] OneDrive set up" "red"
+    }
+    
+    log "!! [ ] OneDrive sync complete"
+    
+    #check if libraries have been mapped to OneDrive
+    if (checkThatSystemFoldersAreMovedToOneDrive) {
+        log "!! [X] Desktop, Documents, and Pictures are mapped to OneDrive folders" "green"
+    } else {
+        log "!! [ ] Desktop, Documents, and Pictures are mapped to OneDrive folders" "red"        
+    }
+}
+
 function checkInstalledPrograms ($shouldBeInstalled) {
     log "Calling checkInstalledPrograms `n>>> no args`n>>> )" "darkgray"
     $apps = Get-WmiObject -Class Win32_Product 
@@ -307,38 +395,47 @@ function checkInstalledPrograms ($shouldBeInstalled) {
     #Query installed 64-bit programs: 
     #  Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName, DisplayVersion, Publisher, InstallDate | Format-Table –AutoSize
 }
-function checkForSecurityDefender {
-    log "Calling checkForSecurityDefender `n>>> no args`n>>> )" "darkgray"
-    $app = "Security Manager AV Defender"
-    $apps64 = Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | 
-        Select-Object DisplayName, DisplayVersion, Publisher, InstallDate
-    return (($apps64.DisplayName -contains $app), ($apps64 | where {$_.DisplayName.contains($app)}))
-}
 function qaInstalledPrograms {
     log "Calling qaInstalledPrograms `n>>> no args`n>>> )" "darkgray"
     $shouldBeInstalled = @(
-        "Adobe AIR",
         "Adobe Acrobat Reader DC",
         "Office 16 Click-to-Run Licensing Component"
         "Microsoft Office 365 ProPlus - en-us"
         "Windows Agent",
         "Google Chrome",
         "Mozilla Firefox 60.0 (x64 en-US)",
-        "Security Manager AV Defender"
+        "Lenovo System Update"
         )
     $res = checkInstalledPrograms $shouldBeInstalled
     if ($res.res) {
         log "!! [X] Chrome, Firefox, and AV are installed (Webroot or Security Manager)" "green"
-        foreach ($a in $res.present) {
-            log "           $a" "green"
-        }
     } else {
         log "!! [ ] Chrome, Firefox, and AV are installed (Webroot or Security Manager)" "red"        
-        foreach ($a in $res.missing) {
-            log "           $a" "red"
-        }
     }
-    return $res.res
+    foreach ($a in $res.present) {
+        log "           $a" "green"
+    }
+    foreach ($a in $res.missing) {
+        log "           $a" "red"
+    }
+}
+
+function checkForSecurityDefender {
+    log "Calling checkForSecurityDefender `n>>> no args`n>>> )" "darkgray"
+    $app = "Security Manager AV Defender"
+    $apps64 = Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | 
+        Select-Object DisplayName, DisplayVersion, Publisher, InstallDate
+    $res = $apps64.DisplayName -contains $app;
+    $install = $apps64 | where {($_.DisplayName) -contains $app};
+    return @($res, $install)
+}
+function qaAV {
+    log "Calling qaAV `n>>> no args`n>>> )" "darkgray"
+    if (checkForSecurityDefender) {
+        log "!! [X] AV is installed (Webroot or Security Manager)" "green"
+    } else {
+        log "!! [ ] AV is installed (Webroot or Security Manager)" "red"
+    }
 }
 
 function checkOutlook {
@@ -382,10 +479,12 @@ function main {
     log "!! [ ] OneDrive set up"
     log "!! [ ] Desktop, Documents, and Pictures are mapped to OneDrive folders"
     log "!! [ ] OneDrive sync complete"
+    qaOneDrive
     log "!! [ ] SharePoint sync complete"
     #log "!! [ ] Chrome, Firefox, and Nable agent are installed"
     qaInstalledPrograms
-    log "!! [ ] AV is installed (Webroot or Security Manager)"
+    #log "!! [ ] AV is installed (Webroot or Security Manager)"
+    qaAV
     log "!! [ ] Office shortcuts are on desktop or in start menu"
     # log "!! [ ] Outlook is configured for user"
     #qaOutlook
