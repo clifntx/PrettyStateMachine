@@ -147,8 +147,8 @@ function moveClientDirs($pathToSetupFolder, $pushPath) {
     
 
     # No really, move the Users folder
-    log "...no really, copy the Users folder: [$($pathToSetupFolder+"Users")] > [$($path+"Users")]" "gray"
-    copy-item ($pathToSetupFolder + "Users") ($localPath + "Users") -Recurse -Force
+    log "...no really, copy the public desktop folder: [$($pathToSetupFolder + "Users\Public\Desktop\*")] > [C:\Users\Public\Desktop]" "gray"
+    copy-item ($pathToSetupFolder + "Users\Public\Desktop\*") ("C:\Users\Public\Desktop") -Recurse -Force
 
     # verify that move was successful
     foreach ($dir in $dirs) {

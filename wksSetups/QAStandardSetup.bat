@@ -4,4 +4,4 @@ PowerShell.exe -Command "& {Start-Process PowerShell.exe -ArgumentList '-Executi
 
 rem "\\192.168.1.24\technet\Setup_Workstations\scripts\clientSetup.ps1"
 rem "\\192.168.1.24\technet\Setup_Workstations\Setup_MPA_Workstation\Push\scripts\config_setupClient_MPAC.csv"
-timeout /t -1
+rem timeout /t -1

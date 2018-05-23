@@ -334,7 +334,7 @@ function checkThatSystemFoldersAreMovedToOneDrive {
     $odd = (dir $env:USERPROFILE).Name | where {$_ -match 'OneDrive -'}
     $sfs = @("Desktop", "Documents", "Pictures")
     foreach ($sf in $sfs) {
-        $dir = "$odd\$sf"
+        $dir = "$env:USERPROFILE\$odd\$sf"
         if (test-path $dir) {
             log "...located $dir" "gray"
         } else {
@@ -344,7 +344,6 @@ function checkThatSystemFoldersAreMovedToOneDrive {
     }
     return $flag
 }
-
 function qaOneDrive {
     #get OneDrive folder
     $odd = (dir $env:USERPROFILE).Name | where {$_ -match 'OneDrive -'}
@@ -470,17 +469,10 @@ function main {
     qaWindowsActivationStatus
     #log "!! [ ] 8GB of RAM is installed"
     qaRam
-    #log "[ ] Correct printers installed. No superfluous printers installed."
-    qaPrinters
-    #log "!! [ ] Connected to correct wifi ssid"
-    qaWifi
-    log "!! [ ] Correct push folder(s) is transferred and current"
-    log "!! [ ] Sharepoint site(s) set up correctly"
-    log "!! [ ] OneDrive set up"
-    log "!! [ ] Desktop, Documents, and Pictures are mapped to OneDrive folders"
-    log "!! [ ] OneDrive sync complete"
+    #log "!! [ ] OneDrive set up"
+    #log "!! [ ] Desktop, Documents, and Pictures are mapped to OneDrive folders"
+    #log "!! [ ] OneDrive sync complete"
     qaOneDrive
-    log "!! [ ] SharePoint sync complete"
     #log "!! [ ] Chrome, Firefox, and Nable agent are installed"
     qaInstalledPrograms
     #log "!! [ ] AV is installed (Webroot or Security Manager)"
@@ -488,6 +480,13 @@ function main {
     log "!! [ ] Office shortcuts are on desktop or in start menu"
     # log "!! [ ] Outlook is configured for user"
     #qaOutlook
+    #log "[ ] Correct printers installed. No superfluous printers installed."
+    qaPrinters
+    #log "!! [ ] Connected to correct wifi ssid"
+    qaWifi
+    log "!! [ ] SharePoint sync complete"
+    log "!! [ ] Correct push folder(s) is transferred and current"
+    log "!! [ ] Sharepoint site(s) set up correctly"
     log "!! [ ] Office is connected to correct account"
     log "!! [ ] COMPLETE QA SCRIPT!!!" "red"
     log "!!" "green"
