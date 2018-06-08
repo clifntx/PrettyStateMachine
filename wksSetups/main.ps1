@@ -154,17 +154,23 @@ function installSoftware ($uniPushPath, $pushPath) {
         log "...identified this as a Lenovo device.  Installing System Update." "gray"
         $command = "$pushPath\$installerDir\systemupdate.exe /verysilent /norestart;"
         log "...running $_ installer [{ $command }]." "gray"
-        $scriptBlock = [Scriptblock]::Create($command)
-        $call = Invoke-Command -ScriptBlock $scriptBlock
-        log "      > $call" "darkgray" 
+        #$scriptBlock = [Scriptblock]::Create($command)
+        #$call = Invoke-Command -ScriptBlock $scriptBlock
+        #log "      > $call" "darkgray" 
+                
+        log "...running { $command }." "gray"
+        & {Start-Process PowerShell.exe -ArgumentList $command -Verb RunAs}
         }
     # Installs Ninite
     @("ninite.exe", "niniteVLC.exe") | foreach {
         $command = "$pushPath\$installerDir\$_;"
         log "...running $_ installer [{ $command }]." "gray"
-        $scriptBlock = [Scriptblock]::Create($command)
-        $call = Invoke-Command -ScriptBlock $scriptBlock
-        log "      > script call: $call" "darkgray"
+        #$scriptBlock = [Scriptblock]::Create($command)
+        #$call = Invoke-Command -ScriptBlock $scriptBlock
+        #log "      > script call: $call" "darkgray"
+
+        log "...running { $command }." "gray"
+        & {Start-Process PowerShell.exe -ArgumentList $command -Verb RunAs}
         }    
     }
 
@@ -258,6 +264,17 @@ function setupAllAccessUser {
     net localgroup administrators AllAccess /add
 }
 
+function mainQA($scriptPath) {
+    log "Calling mainQA(`n>>> scriptPath=$scriptPath`n>>> )" "darkgray"
+    log "...opening a window for QA" "gray"
+    #.$scriptPath\QAStandardSetup -customerId "001"
+
+    $call = "-ExecutionPolicy Bypass -File '$scriptPath\QAStandardSetup.ps1' -customerId '001' -logLevel $($script:logLevel)"
+    log "Calling {Start-Process PowerShell.exe -ArgumentList '$call' -Verb RunAs}" "gray"
+    & {Start-Process PowerShell.exe -ArgumentList $call -Verb RunAs}
+    #& {Start-Process PowerShell.exe -ArgumentList "-ExecutionPolicy Bypass -File $fileName -logLevel 1" -Verb RunAs}
+   }
+
 function main ($uniPushPath, $pushPath, $scriptPath) {
     log "Calling main(`n>>> uniPushPath=$uniPushPath`n>>> pushPath=$pushPath`n>>> scriptPath=$scriptPath`n>>> )" "darkgray"
     #Enabling scripting
@@ -287,7 +304,7 @@ function main ($uniPushPath, $pushPath, $scriptPath) {
     setupAllAccessUser
     #QA all changes
     log "Running QA script [$scriptPath\QAStandardSetup]" "White"
-    .$scriptPath\QAStandardSetup
+    mainQA $scriptPath
     #Disabling scripting
     #changeScriptingPolicy "restricted"
     }

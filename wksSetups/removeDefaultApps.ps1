@@ -27,7 +27,7 @@ function removeDefaultApps {
         log ">> ... $($Error[0].Exception)" "red"
         }
     log "...disableDefaultsSettings process complete." "green"
-    pause
     }
 
 removeDefaultApps
+#pause

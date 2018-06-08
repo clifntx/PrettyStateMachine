@@ -1,10 +1,12 @@
 ﻿#param must be the first statement in your script
 Param(
-  [string]$ip = "90.90.90.90",
-  [string]$location = "Test",
+  [string]$ip = $(throw ">> ERROR: Please enter a valid ip argument.  ex: -ip '10.10.5.6'"),
+  [string]$location = $(throw ">> ERROR: Please include a location argument. ex -location 'Plymouth Nurse Office'"),
   [string]$driver = "TOSHIBA Universal Printer 2",
   [string]$logpath = "c:\push\logs\printer_log.txt"
 )
+
+-ip "90.90.90.90" -location = "Fitchburg Office"
 
 function log($str){
     $dir = ((($logPath.Split("\"))[0..($logPath.Split("\").Length-2)]) -join "\");

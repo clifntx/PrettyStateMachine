@@ -1,16 +1,12 @@
 ﻿param(
+    [string]$customerId = "",
     [int]$logLevel = 1,
+    [string]$configPath = "",
     [string]$PUSH_PATH = "C:\Push",
     [string]$SCRIPT_PATH = "\\192.168.1.24\technet\Setup_Workstations",
     [string]$UNIPUSH_PATH = "\\192.168.1.24\technet\Setup_Workstations\UniversalPushFolder\Push"
+    
     )
-
-# CONSTANTS
-$PUSH_PATH = "C:\Push";
-#$SCRIPT_PATH = "\\192.168.1.24\technet\Setup_Workstations\scripts"
-$SCRIPT_PATH = "\\192.168.1.24\technet\Scripts\wksSetups"
-$UNIPUSH_PATH = "\\192.168.1.24\technet\Setup_Workstations\UniversalPushFolder\Push";
-
 
 function log ($str, $fc="white"){
 # fc can be any of these [Black, DarkBlue, DarkGreen, DarkCyan, DarkRed, DarkMagenta, DarkYellow, Gray, DarkGray, Blue, Green, Cyan, Red, Magenta, Yellow, White]
@@ -27,6 +23,210 @@ function log ($str, $fc="white"){
     if ($priority -ge $logLevel) {
         write-host $str -ForegroundColor $fc
     }
+}
+
+function download($driverUrl, $downloadPath) {
+    log " Calling download(`n>>> -driverUrl $driverUrl`n>>> -downloadPath $downloadPath`n>>> )" "darkgray"
+    try {
+        $n = 0
+        while(!((Test-Path $downloadPath) -or ($n -gt 10))) {
+            $wc = New-Object System.Net.WebClient
+            $wc.DownloadFile($driverUrl, $downloadPath)
+            log "...($n) downloading [$driverUrl]" "gray"
+            timeout /t ($n*3)
+            $n += 1
+        }
+    } catch [System.Management.Automation.MethodInvocationException] {
+        log ">> CAUGHT ERROR: <MethodInvocationException> Cannot access url [$driverUrl] ..." "Yellow"
+        log ">> CAUGHT ERROR: $PSItem" "Yellow"
+        return $false
+    } catch {
+        log "E!"
+        log ">> UNCAUGHT ERROR: $PSItem" "red"
+        log ">> UNCAUGHT ERROR: $($Error[0].Exception.GetType().fullname)" "red"
+        return $false
+        }
+    return (Test-Path $downloadPath)
+}
+
+function validateCustomerId ($id) {
+    log "Calling validateCustomerId(`n>>> `$id=`"$id`"`n>>> )" "darkgray"
+    switch ($id) {
+        ($id.Length -ne 3) {$res=$false}
+        ($id.getType().Name -ne "String") {$res=$false}
+        default {$res = $true}
+    }
+    log "...validateCustomerId() returning $res for `$id:$id" "gray"
+    return $res
+}
+function promptForCustomerId($idList) {
+    log "Calling promptForCustomerId(`n>>> no args`n>>> )" "darkgray"    
+    $n = 0
+    $id = ""
+    $msg = "Please enter a valid customer id number..."
+    $idList | foreach {log "$($_.customerId) : $($_.customerAbbreviation) : $($_.account)" "white"}
+    while ($true) {
+        log "...id not validated. id=$id" "gray"
+        log $msg "White"
+        $id = Read-Host -Prompt "Customer Id"
+        $n += 1
+        if(validateCustomerId $id) {
+            log "...received valid user input.  Returning id: $id" "gray"
+            break
+        }
+        if ($n -gt 3){
+            $id = "001"
+            log "...failed to receive valid user input.  Returning id: $id" "gray"
+            break
+        }
+    }
+    return $id
+}
+
+function buildConfig($customerId, $configUrl, $configPath) {
+    log "Calling buildConfig(`n>>> -customerId `"$customerId`n>>> -configUrl `"$configUrl`"`n>>> -configPath `"$configPath`"`n>>>`n>>> )" "darkgray"
+    if(download $configUrl $configPath) {
+        $csv = import-csv $configPath
+        Remove-Item -Path $configPath
+    } else {
+        log ">>ERROR: Could not download config from `"$configUrl`"" "red"
+        $customerId = "001"
+    }
+    
+    if($customerId.Length -lt 3){
+        $customerId = promptForCustomerId ($csv)
+        log "User inputted customer id: $customerId; Len: $($customerId.Length)" "gray"
+    } else {
+        log "Script provided customer id: $customerId; Len: $($customerId.Length)" "gray"
+    }
+
+    if($customerId -eq "001") {
+        $config = @{
+            "install_these"=$Null;
+            "customerId"=$Null;
+            "pathToSetupFolder"=$Null;
+            "pathToPrinterConfig"=$Null;
+            "Domain"=$Null;
+        }
+        log "...no config provided.  Returning blank config." "white"
+    } else {
+        $lod = @()
+        foreach ($r in $csv) {
+            log ">check($($r.customerId) -eq $customerId)" "darkgray"
+            if ($r.customerId -eq $customerId) {
+                log "...located customerId.  $($r.customerId)" "gray"
+                $keys = $r.PSObject.Properties.Name
+                $c = @{}
+                $keys | foreach {
+                $c[$_] = $r[0].($_)
+                }
+                $lod += $c
+            }
+        }
+        log "...located $($lod.Length) config record(s)." "gray"
+        $config = $lod[0]               
+        
+        log "...returning config." "darkgray"
+        log ">{" "darkgray"
+        foreach ($k in $keys) {
+            log ">   `$config[$k] = $($config[$k])" "darkgray"
+        }
+        log ">}" "darkgray"
+    }
+
+    return $config
+}
+
+function old_buildConfig($customerId) {
+    log "Calling buildConfig(`n>>> -configPath `"$configPath`"`n>>> )" "darkgray"
+    
+    if($customerId.Length -lt 3){
+        $customerId = promptForCustomerId
+        log "User inputted customer id: $customerId; Len: $($customerId.Length)" "gray"
+    } else {
+        log "Script provided customer id: $customerId; Len: $($customerId.Length)" "gray"
+    }
+
+    if($customerId -eq "001") {
+        $config = @{
+            "install_these"=$Null;
+            "customerId"=$Null;
+            "pathToSetupFolder"=$Null;
+            "pathToPrinterConfig"=$Null;
+            "Domain"=$Null;
+        }
+        log "...no config provided.  Returning blank config." "white"
+    } else {
+        try {
+            $csv = Import-Csv $configPath -ErrorAction Stop
+            $keys = $csv[0].PSObject.Properties.Name
+        } catch [System.Management.Automation.RuntimeException] {
+            log ">>CAUGHT ERROR: [System.Management.Automation.RuntimeException]" "yellow"
+            if (([String]$e.Exception).contains("null-valued expression")) {
+                log "...provided csv is null." "yellow"
+            } elseif (([String]$e.Exception).contains("index into a null array")) {
+                log "...first row of provided csv is empty." "yellow"
+            } else {
+                log ">> $($Error[0].Exception)" "yellow"
+            }
+        } catch {
+            log ">> UNCAUGHT ERROR: $($Error[0].Exception.GetType().fullname)" "Red"
+            log ">> $error[0]" "red"
+        }
+        log ">> Imported csv..." "darkgray"
+        log $csv "darkgray"
+        log "...building config." "gray"
+    
+        $config = @{}
+        foreach ($k in $keys) {
+            $config[$k] = $csv.($k)
+        }
+
+        #TODO: Provided a way to decode a list from a single csv field.  ec ["app1","app2"]
+        log "...built config with length [$($config.Length)] and keys[$($config.Keys)]" "white"
+    }
+    
+    return $config
+    }
+
+function buildPrinterLod($customerId, $configUrl, $configPath, $public="1") {
+    log "Calling convertCsvToLod(`n>>> -customerId `"$customerId`n>>> -configUrl `"$configUrl`"`n>>> -configPath `"$configPath`"`n>>> -public `"$public`"`n>>> )" "darkgray"
+    if(download $configUrl $configPath) {
+            $pmap = @{
+                "public"     = "Public";
+                "location"   = "location";
+                "driverName" = "driver";
+                "ip"         = "ip";
+                "driverPath" = "driverPath";
+                "color"      = "BW or Color"
+            }
+            $csv = import-csv $configPath
+            $temp = $csv | where {$_.GroupId -eq $customerId -and $_.Public -eq $public}
+
+            $lod = @()
+            foreach ($r in $csv) {
+                if (($r.GroupId -eq $customerId) -and ($r.Public -eq $public)) {
+                    $lod += $r
+                }
+            }
+            log "...located $($lod.Length) printer record(s)." "gray"
+
+            $printerLod = @()
+            foreach ($d in $lod){
+                    $p = @{}
+                    $pmap.keys | foreach {
+                        $p[$_] = $d.($pmap[$_])
+                    }
+                    $printerLod += $p
+                    log "      + adding printer [$($printerLod.Length)] to lod: $p" "darkgray"
+            }
+    } else {
+        log ">>ERROR: Could not download printer config from `"$url`"" "red"
+    }
+    Remove-Item -Path $configPath
+    log "...returning lod with $($printerLod.Length) printer(s)." "gray"
+
+    return $printerLod
 }
 
 function checkForSecureBoot {
@@ -224,16 +424,8 @@ function qaRam {
         }
     }
 
-function qaPrinters {
-    log "Calling qaPrinters `n>>> no args`n>>> )" "darkgray"
-    log "!! [ ] Installed printers:"
-    foreach ($p in (get-printer).Name) {
-        log  "!!       $p" "yellow"
-        }
-    }
-
-function checkDomain {
-    log "Calling checkDomain `n>>> no args`n>>> )" "darkgray"
+function checkDomain ($domainShoudBe) {
+    log "Calling checkDomain `n>>> `$domainShoudBe=$domainShoudBe`n>>> )" "darkgray"
     #(Get-WmiObject Win32_ComputerSystem)
     #    .UserName: AzureAD\ClifBoyd
     #    .Domain: WORKGROUP
@@ -257,25 +449,27 @@ function checkDomain {
     } else {
         log "...device is not Azure joined." "gray"
         }
-    return $res
+
+    log "...discovered $res, should be $domainShoudBe" "gray"
+    #[0]: bool : Does discovered domain match provided domain?
+    #[1]: bool : Discovered Domain
+    #[2]: bool : ShouldBe Domain
+    return (($res -eq $domainShoudBe),$res,$domainShoudBe)
     }
-function qaDomain {
+function qaDomain ($domainShoudBe) {
     log "Calling qaDomain `n>>> no args`n>>> )" "darkgray"
-    $d = checkDomain
-    log "!! [ ] Check Domain:"
-    log "!!       Domain: [$d]" "yellow"
+    $d = checkDomain $domainShoudBe
+    if($d[2].Length -lt 1) {
+        log "!! [ ] Joined to correct Domain" "white"
+        log "!!       Discoverd Domain: [$($d[1])]" "yellow"
+    } elseif($d[0]) {
+        log "!! [X] Joined to correct Domain" "green"
+        #log "!!       Discovered Domain: [$($d[1])]" "yellow"
+    } else {
+        log "!! [ ] Joined to correct Domain" "red"       
+        log "!!       Discoverd Domain: [$($d[1])] (should be $domainShoudBe)" "red" 
     }
-
-function qaWifi {
-    log "Calling qaWifi `n>>> no args`n>>> )" "darkgray"
-    log "!! [ ] Connected to correct wifi ssid"
-    $text = netsh wlan show profiles
-    $wifi = $text[9..$text.Length]
-    $wifi | foreach {
-        log "!!       $(-join $_[27..$_.Length])" "yellow"
-        }
-    }
-
+}
 
 function Set-KnownFolderPath {
     <#
@@ -330,37 +524,52 @@ function moveSystemFoldersToOneDrive{
 }
 function checkThatSystemFoldersAreMovedToOneDrive {
     log "Calling checkThatSystemFoldersAreMovedToOneDrive `n>>> no args`n>>> )" "darkgray"    
-    $flag = $true
-    $odd = (dir $env:USERPROFILE).Name | where {$_ -match 'OneDrive -'}
+    $setupFlag = $true
+    $libsFlag = $true
+    #get OneDrive folder
+    $uds = @()
+    foreach ($u in dir c:\users | where {$_.Name -ne "AllAccess" -and $_.Name -ne "Public"}) {
+       $uds+= $u
+    }
+    if ($uds.Length -eq 1){
+        $odd = (dir $uds[0].FullName).FullName | where {$_ -match 'OneDrive -'}
+    } elseif ($uds.Length -lt 1){
+        log "...`>> ERROR<checkThatSystemFoldersAreMovedToOneDrive()>: No users found on this computer." "red"
+        log "...`$uds=$uds" "red"
+    } else {
+        log "!!   `WARNING<checkThatSystemFoldersAreMovedToOneDrive()>: " "yellow"
+        log "!!     ...Multiple users found [$($uds.Length)].  QA may be unreliable." "yellow"        
+        log ">`$uds=$([system.String]::Join(", ", $uds))" "darkgray"
+    }
     $sfs = @("Desktop", "Documents", "Pictures")
     foreach ($sf in $sfs) {
-        $dir = "$env:USERPROFILE\$odd\$sf"
+        $dir = "$odd\$sf"
         if (test-path $dir) {
-            log "...located $dir" "gray"
+            log "!!      ...located $dir" "gray"
         } else {
-            log "...could not locate $dir" "red"            
-            $flag = $false
+            log "!!      ...could not locate $dir" "red"            
+            $libsFlag = $false
         }
     }
-    return $flag
+    # [0]: bool : Is OneDrive set up?
+    # [1]: bool : Are library folders in OneDrive?
+    return @{"odSetup"=$setupFlag; "odLibsPresent"=$libsFlag}
 }
 function qaOneDrive {
-    #get OneDrive folder
-    $odd = (dir $env:USERPROFILE).Name | where {$_ -match 'OneDrive -'}
-    if ($odd.Length -gt 0) {
-        log "!! [X] OneDrive set up" "green"
+    $res = checkThatSystemFoldersAreMovedToOneDrive
+    if ($res["odSetup"]) {
+        log "!! [X] OneDrive installed" "green"
     } else {
-        log "!! [ ] OneDrive set up" "red"
+        log "!! [ ] OneDrive installed" "red"
     }
-    
-    log "!! [ ] OneDrive sync complete"
-    
-    #check if libraries have been mapped to OneDrive
-    if (checkThatSystemFoldersAreMovedToOneDrive) {
+    #check if library folders are present in OneDrive
+    if ($res["odLibsPresent"]) {
         log "!! [X] Desktop, Documents, and Pictures are mapped to OneDrive folders" "green"
     } else {
         log "!! [ ] Desktop, Documents, and Pictures are mapped to OneDrive folders" "red"        
     }
+    #check if libraries have been mapped to OneDrive
+    log "!! [ ] Local libraries are mapped to OneDrive" "white"
 }
 
 function checkInstalledPrograms ($shouldBeInstalled) {
@@ -373,7 +582,7 @@ function checkInstalledPrograms ($shouldBeInstalled) {
     $present = @();
     $res = $true;
     foreach ($a in $shouldBeInstalled) {
-        if (($apps.Name).contains($a) -or ($apps64.DisplayName.contains($a))) {
+        if ([bool]($apps.Name -like "Adobe Acrobat Reader*") -or [bool]($apps64.DisplayName -like $a)) {
             #log "!!       $a" "green"; 
             $present += $a;
         } else {
@@ -396,26 +605,36 @@ function checkInstalledPrograms ($shouldBeInstalled) {
 }
 function qaInstalledPrograms {
     log "Calling qaInstalledPrograms `n>>> no args`n>>> )" "darkgray"
-    $shouldBeInstalled = @(
+    $shouldBeInstalled32 = @(
         "Adobe Acrobat Reader DC",
         "Office 16 Click-to-Run Licensing Component"
-        "Microsoft Office 365 ProPlus - en-us"
-        "Windows Agent",
-        "Google Chrome",
-        "Mozilla Firefox 60.0 (x64 en-US)",
-        "Lenovo System Update"
+        "Windows Agent"
         )
+    $shouldBeInstalled64 = @(
+        "Microsoft Office 365 ProPlus - en-us",
+        "Google Chrome",
+        "Mozilla Firefox *"
+        )
+    $shouldBeInstalled = $shouldBeInstalled32 + $shouldBeInstalled64
+
+
     $res = checkInstalledPrograms $shouldBeInstalled
     if ($res.res) {
-        log "!! [X] Chrome, Firefox, and AV are installed (Webroot or Security Manager)" "green"
+        log "!! [X] Needed software installed." "green"
     } else {
-        log "!! [ ] Chrome, Firefox, and AV are installed (Webroot or Security Manager)" "red"        
+        log "!! [ ] Needed software installed." "red"        
     }
     foreach ($a in $res.present) {
-        log "           $a" "green"
+        log "!!         $a" "gray"
     }
     foreach ($a in $res.missing) {
-        log "           $a" "red"
+        log "!!         $a" "red"
+    }
+
+    if(Test-Path "C:\Program Files (x86)\Lenovo\System Update\tvsu.exe"){
+        log "!! [X] Lenovo System Update is installed." "Green"
+    } else {
+        log "!! [ ] Lenovo System Update is installed." "red"
     }
 }
 
@@ -437,6 +656,98 @@ function qaAV {
     }
 }
 
+function checkPrinters ($customerId) {
+    log "Calling checkPrinters `n>>> `$customerId=$customerId`n>>> )" "darkgray"
+    log "...checking printers." "gray"
+    $PRINTER_CONFIG_URL = "https://s3.amazonaws.com/aait/config_Printers.csv"
+    $PRINTER_CONFIG_PATH = "c:\push\config_Printer.csv"
+
+    $plod = buildPrinterLod $customerId $PRINTER_CONFIG_URL $PRINTER_CONFIG_PATH
+    log "...checking for $($plod.length) printers." "gray"
+    $printers = Get-Printer
+    log "...discovered $($plod.length) printers." "gray"
+
+    $res = @()
+    foreach ($p in $plod) {
+        $printerName = "$($p.location) ($($p.color)) - $($p.driverName)"
+        $printersShouldBe += $printerName
+        if (($printers.Name) -contains $printerName) {
+            log "!!     + $printerName is installed." "gray"
+        } else {
+            log "!!     - $printerName is not installed." "red"
+            $res += $false
+        }
+    }
+
+    return (-not $res.contains($false))
+}
+function qaPrinters ($customerId) {
+    log "Calling qaPrinters `n>>> no args`n>>> )" "darkgray"
+    
+
+    if($customerId.Length -lt 1) {
+        log "!! [ ] Installed printers:" "white"
+        foreach ($p in (get-printer).Name) {
+            log  "!!       $p" "yellow"
+        }
+    } else {
+        $res = checkPrinters $customerId
+        if ($res) {
+            log "!! [X] Correct printers installed." "green"
+        } else {
+            log "!! [ ] Correct printers installed." "red"
+            foreach ($p in (get-printer).Name) {
+                log  "!!       $p" "yellow"
+            }
+        }
+    }
+}
+function remediatePrinters($customerId) {
+    log "Calling remediatePrinters(`n>>> customerId=$customerId`n>>> )" "darkgray"
+    log "...opening a window for installing printers" "gray"
+    $call = "-ExecutionPolicy Bypass -File \\192.168.1.24\technet\Scripts\PrinterInstalls\InstallPrinters.ps1 -customerId $customerId -logLevel $logLevel"
+    log "Calling {Start-Process PowerShell.exe -ArgumentList `"$call`" -Verb RunAs}" "gray"
+    & {Start-Process PowerShell.exe -ArgumentList $call -Verb RunAs}
+}
+
+function checkWifi ($shouldBeWifiSSIDs){
+    $ssids = @()
+    $text = netsh wlan show profiles
+    $wifi = $text[9..($text.Length-2)]
+    $wifi | foreach {
+        $ssid = $(-join $_[27..$_.Length])
+        if(-not ([string]::IsNullOrEmpty($ssid))) {
+            $ssids += $ssid
+        }
+    }
+    log "...discovered `$ssids: $([system.String]::Join(", ", $ssids))" "gray"
+    $flag = $true
+    foreach ($ssid in $shouldBeWifiSSIDs) {
+        if ($ssids.contains($ssid)) {
+            #log "...located `"$ssid`" in `$ssids" "gray"
+        } else {
+            #log "...failed to locate `"$ssid`" in `$ssids" "red"
+            $flag = $false            
+        }
+    }
+    log "SSIDs should be: [$([system.String]::Join(", ", $shouldBeWifiSSIDs))]" "yellow"
+
+    return ($res, $ssids)
+}
+function qaWifi {
+    log "Calling qaWifi `n>>> no args`n>>> )" "darkgray"
+    log "!! [ ] Connected to correct wifi ssid"
+    $res = checkWifi @("")
+    $res[1] | foreach {
+        log "!!       $_" "yellow"
+    }
+#    $text = netsh wlan show profiles
+#    $wifi = $text[9..$text.Length]
+#    $wifi | foreach {
+#        log "!!       $(-join $_[27..$_.Length])" "yellow"
+#        }
+    }
+
 function checkOutlook {
     & 'C:\Program Files (x86)\Microsoft Office\root\Office16\OUTLOOK.EXE'
     }
@@ -451,7 +762,10 @@ function qaOutlook {
 #
 ###############
 
-function main {
+function main ($customerId, $configUrl, $configPath) {
+    log "Calling main(`n>>> -customerId `"$customerId`"`n>>> -configUrl `"$configUrl`"`n>>> -configPath `"$configPath`"`n>>>`n>>> )" "darkgray"
+    
+    $c = buildConfig $customerId $configUrl $configPath
 
     log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" "green"
     log "!!" "green"
@@ -462,7 +776,7 @@ function main {
     #log "[ ] BitLocker Enabled"
     qaBitLockerStatus
     #log "!! Joined to Azure domain"
-    qaDomain
+    qaDomain $c.Domain
     #log "[ ] Machine name is correct"
     qaComputerName
     #log "!! [ ] Windows is activated"
@@ -481,7 +795,7 @@ function main {
     # log "!! [ ] Outlook is configured for user"
     #qaOutlook
     #log "[ ] Correct printers installed. No superfluous printers installed."
-    qaPrinters
+    qaPrinters $c.customerId
     #log "!! [ ] Connected to correct wifi ssid"
     qaWifi
     log "!! [ ] SharePoint sync complete"
@@ -491,8 +805,26 @@ function main {
     log "!! [ ] COMPLETE QA SCRIPT!!!" "red"
     log "!!" "green"
     log "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" "green"
+    log ""
+    log "TODOs: " "yellow"
+    log "[ ] QA correct push folder moved" "yellow"
+    log "[ ] QA correct Users folder moved" "yellow"
+    log "[ ] QA correct printers moved" "yellow"
+    log "[ ] QA library locations correct" "yellow"
+    log "[ ] Printers self healing" "yellow"
+
 }
 
-main
+#clear
+
+# CONSTANTS
+$PUSH_PATH = "C:\Push";
+$CONFIG_SETUPCLIENT_URL = "https://s3.amazonaws.com/aait/config_setupClient.csv"
+$CONFIG_SETUPCLIENT_PATH = "c:\push\config_setupClient.csv"
+$SCRIPT_PATH = "\\192.168.1.24\technet\Scripts\wksSetups"
+$UNIPUSH_PATH = "\\192.168.1.24\technet\Setup_Workstations\UniversalPushFolder\Push";
+$DEFAULT_CONFIG_PATH = "\\192.168.1.24\technet\Scripts\setupConfigs\config_setupClient__DEFAULT.csv"
+
+main $customerId $CONFIG_SETUPCLIENT_URL $CONFIG_SETUPCLIENT_PATH
 
 pause

@@ -1,33 +1,4 @@
-﻿Param(
-    [string]$printerCsv = $(throw ">> ERROR: Please include a path to a printer csv.  ex: powershell.exe .\InstallPrinters.ps1 -logLevel -1 -printerCsv c:\Push\printerDrivers\Printers_MVTC.csv"),
-    [string]$printerCsvUrl= "",
-    [int]$logLevel = 0,
-    [string]$pushRoot = "c:\push\printerDrivers",
-    [hashtable[]]$driverMap
-    )
-$DRIVER_URL_MAP = @(
-        @{"driver"="HP Universal Printing PCL 6"; "path"="\HP\HPUniversalPCL6\hpcu215u.inf"; "url" = "https://s3.amazonaws.com/aait/HP.zip"},
-        @{"driver"="KONICA MINOLTA 4750 Series PCL6"; "path"="\KonicaMinolta\bizhub4750Series_Win10_PCL_PS_XPS_FAX_v3.1.0.0\Drivers\Win_x64\KOBK1J__.inf"; "url" = "https://s3.amazonaws.com/aait/KonicaMinolta.zip"},
-        @{"driver"="KONICA MINOLTA C3110 PCL6"; "path"="\KonicaMinolta\C3110\bizhubC3110_Win10_PCL_PS_XPS_FAX_v1.2.1.0\bizhubC3110_Win10_PCL_PS_XPS_FAX_v1.2.1.0\Drivers\Win_x64\KOBK4J__.inf"; "url" = "https://s3.amazonaws.com/aait/KonicaMinolta.zip"},
-        @{"driver"="KONICA MINOLTA C3850 Series PCL6"; "path"="\KonicaMinolta\BizhubC3850fs_MFP_Win_x64\PCL\english\KOBJ_J__.inf"; "url" = "https://s3.amazonaws.com/aait/KonicaMinolta.zip"},
-        @{"driver"="KX DRIVER for Universal Printing"; "path"="\Kyocera\KXPrintDriverv7.3.1207\64bit\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/KXPrintDriverv7.3.1207.zip"},
-        @{"driver"="Kyocera ECOSYS M2535dn KX"; "path"="\Kyocera\KXPrintDriverv7.3.1207\64bit\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/KXPrintDriverv7.3.1207.zip"},
-        @{"driver"="Kyocera TASKalfa 5551ci"; "path"="\Kyocera\xxx1i_xxx1ci_PCL_Uni\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/Kyocera_xxx1i_xxx1ci_PCL_Uni.zip"},
-        @{"driver"="Kyocera TASKalfa 4501i"; "path"="\Kyocera\xxx1i_xxx1ci_PCL_Uni\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/Kyocera_xxx1i_xxx1ci_PCL_Uni.zip"},
-        @{"driver"="Kyocera TASKalfa 3501i"; "path"="\Kyocera\xxx1i_xxx1ci_PCL_Uni\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/Kyocera_xxx1i_xxx1ci_PCL_Uni.zip"},
-        @{"driver"="Kyocera TASKalfa 3051ci"; "path"="\Kyocera\xxx1i_xxx1ci_PCL_Uni\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/Kyocera_xxx1i_xxx1ci_PCL_Uni.zip"},
-        @{"driver"="PCL6 V4 Driver for Universal Print"; "path"="\Savin\SavinUniversal\disk1\r4600.inf"; "url" = "https://s3.amazonaws.com/aait/Savin.zip"}
-        @{"driver"="TOSHIBA Universal Printer 2"; "path"="\Toshiba\64bit\eSf6u.inf"; "url" = "https://s3.amazonaws.com/aait/Toshiba_64bit.zip"},
-        @{"driver"="Xerox Global Print Driver PCL6"; "path"="\Xerox\X-GPD_5.404.8.0_PCL6_x64_Driver.inf\x2UNIVX.inf"; "url" = "https://s3.amazonaws.com/aait/Xerox.zip"},
-        @{"driver"="Xerox AltaLink B8055 PCL6"; "path"="\Xerox\ALB80XX_5.528.10.0_PCL6_x64_Driver.inf\x2ASNOX.inf"; "url" = "https://s3.amazonaws.com/aait/Xerox.zip"}
-        )
-
-KONICA MINOLTA 4750 Series PCL6	
-KONICA MINOLTA C3110 PCL6	C:\Push\KonicaMinolta\C3110\bizhubC3110_Win10_PCL_PS_XPS_FAX_v1.2.1.0\bizhubC3110_Win10_PCL_PS_XPS_FAX_v1.2.1.0\Drivers\Win_x64\KOBK4J__.inf
-$driverMap = $DRIVER_URL_MAP
-
-
-#################################
+﻿#################################
 #EXAMPLE $printers array
 #$printers = @(
 #    @{"location"="Upstairs Copier"; "driverName"="PCL6 V4 Driver for Universal Print"; "ip"="10.0.0.99"; "color"="Color"},
@@ -44,6 +15,30 @@ $driverMap = $DRIVER_URL_MAP
 #
 #################################
 
+Param(
+    [string]$customerId = $(throw ">> ERROR: Please include a path to a printer csv.  ex: powershell.exe .\InstallPrinters.ps1 -logLevel -1 -printerCsv c:\Push\printerDrivers\Printers_MVTC.csv"),
+    [int]$logLevel = 0,
+    [string]$pushRoot = "c:\push\printerDrivers"
+    )
+
+$DRIVER_URL_MAP = @(
+        @{"driver"="HP Universal Printing PCL 6"; "path"="\HP\HPUniversalPCL6\hpcu215u.inf"; "url" = "https://s3.amazonaws.com/aait/HP.zip"},
+        @{"driver"="KONICA MINOLTA 4750 Series PCL6"; "path"="\KonicaMinolta\bizhub4750Series_Win10_PCL_PS_XPS_FAX_v3.1.0.0\Drivers\Win_x64\KOBK1J__.inf"; "url" = "https://s3.amazonaws.com/aait/KonicaMinolta.zip"},
+        @{"driver"="KONICA MINOLTA C3110 PCL6"; "path"="\KonicaMinolta\C3110\bizhubC3110_Win10_PCL_PS_XPS_FAX_v1.2.1.0\bizhubC3110_Win10_PCL_PS_XPS_FAX_v1.2.1.0\Drivers\Win_x64\KOBK4J__.inf"; "url" = "https://s3.amazonaws.com/aait/KonicaMinolta.zip"},
+        @{"driver"="KONICA MINOLTA C3850 Series PCL6"; "path"="\KonicaMinolta\BizhubC3850fs_MFP_Win_x64\PCL\english\KOBJ_J__.inf"; "url" = "https://s3.amazonaws.com/aait/KonicaMinolta.zip"},
+        @{"driver"="KX DRIVER for Universal Printing"; "path"="\Kyocera\KXPrintDriverv7.3.1207\64bit\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/KXPrintDriverv7.3.1207.zip"},
+        @{"driver"="Kyocera ECOSYS M2535dn KX"; "path"="\Kyocera\KXPrintDriverv7.3.1207\64bit\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/KXPrintDriverv7.3.1207.zip"},
+        @{"driver"="Kyocera TASKalfa 5551ci"; "path"="\Kyocera\xxx1i_xxx1ci_PCL_Uni\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/Kyocera_xxx1i_xxx1ci_PCL_Uni.zip"},
+        @{"driver"="Kyocera TASKalfa 4501i"; "path"="\Kyocera\xxx1i_xxx1ci_PCL_Uni\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/Kyocera_xxx1i_xxx1ci_PCL_Uni.zip"},
+        @{"driver"="Kyocera TASKalfa 3501i"; "path"="\Kyocera\xxx1i_xxx1ci_PCL_Uni\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/Kyocera_xxx1i_xxx1ci_PCL_Uni.zip"},
+        @{"driver"="Kyocera TASKalfa 3051ci"; "path"="\Kyocera\xxx1i_xxx1ci_PCL_Uni\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/Kyocera_xxx1i_xxx1ci_PCL_Uni.zip"},
+        @{"driver"="PCL6 V4 Driver for Universal Print"; "path"="\Savin\SavinUniversal\disk1\r4600.inf"; "url" = "https://s3.amazonaws.com/aait/Savin.zip"}
+        @{"driver"="TOSHIBA Universal Printer 2"; "path"="\Toshiba\64bit\eSf6u.inf"; "url" = "https://s3.amazonaws.com/aait/Toshiba_64bit.zip"},
+        @{"driver"="Xerox Global Print Driver PCL6"; "path"="\Xerox\X-GPD_5.404.8.0_PCL6_x64_Driver.inf\x2UNIVX.inf"; "url" = "https://s3.amazonaws.com/aait/Xerox.zip"},
+        @{"driver"="Xerox AltaLink B8055 PCL6"; "path"="\Xerox\ALB80XX_5.528.10.0_PCL6_x64_Driver.inf\x2ASNOX.inf"; "url" = "https://s3.amazonaws.com/aait/Xerox.zip"}
+        )
+$PRINTER_CONFIG_URL = "https://s3.amazonaws.com/aait/config_Printers.csv"
+$PRINTER_CONFIG_PATH = "c:\push\config_Printer.csv"
 function log ($str, $fc="white"){
 # fc can be any of these [Black, DarkBlue, DarkGreen, DarkCyan, DarkRed, DarkMagenta, DarkYellow, Gray, DarkGray, Blue, Green, Cyan, Red, Magenta, Yellow, White]
     $fc = $fc.ToLower()
@@ -92,6 +87,64 @@ function convertCsvToLod($csvPath) {
         $printers += $p
     }
     return $printers
+}
+
+function downloadPrinterConfig ($configUrl, $configPath) {
+    log "Calling downloadPrinterConfig(`n>>> configUrl `"$configUrl`n>>> configPath `"$configPath`"`n>>> )" "darkgray"
+    try {
+        $wc = New-Object System.Net.WebClient
+        $wc.DownloadFile($configUrl, $configPath)
+    } catch [System.Management.Automation.MethodInvocationException] {
+        log ">> CAUGHT ERROR: <MethodInvocationException> Cannot access url [$configUrl] ..." "Yellow"
+        log ">> CAUGHT ERROR: $PSItem" "Yellow"
+        return $false
+    } catch {
+        log "E!"
+        log ">> UNCAUGHT ERROR: $PSItem" "red"
+        log ">> UNCAUGHT ERROR: $($Error[0].Exception.GetType().fullname)" "red"
+        return $false
+        }
+    return (test-path $configPath)
+}
+
+function buildPrinterLod($customerId, $configUrl, $configPath, $public="1") {
+    log "Calling convertCsvToLod(`n>>> -customerId `"$customerId`n>>> -configUrl `"$configUrl`"`n>>> -configPath `"$configPath`"`n>>> -public `"$public`"`n>>> )" "darkgray"
+    if(downloadPrinterConfig $configUrl $configPath) {
+            $pmap = @{
+                "public"     = "Public";
+                "location"   = "location";
+                "driverName" = "driver";
+                "ip"         = "ip";
+                "driverPath" = "driverPath";
+                "color"      = "BW or Color"
+            }
+            $csv = import-csv $configPath
+            $temp = $csv | where {$_.GroupId -eq $customerId -and $_.Public -eq $public}
+
+            $lod = @()
+            foreach ($r in $csv) {
+                if (($r.GroupId -eq $customerId) -and ($r.Public -eq $public)) {
+                    $lod += $r
+                }
+            }
+            log "...located $($lod.Length) printer record(s)." "gray"
+
+            $printerLod = @()
+            foreach ($d in $lod){
+                    $p = @{}
+                    $pmap.keys | foreach {
+                        $p[$_] = $d.($pmap[$_])
+                    }
+                    $printerLod += $p
+                    log "      + adding printer [$($printerLod.Length)] to lod: $p" "darkgray"
+            }
+    } else {
+        log ">>ERROR: Could not download printer config from `"$configUrl`"" "red"
+    }
+    Remove-Item -Path $configPath
+    log "...returning lod with $($printerLod.Length) printer(s)." "gray"
+
+    return $printerLod
 }
 
 function getDriverInfo($driverName, $driverMap) {
@@ -332,7 +385,7 @@ function downloadAndInstallPrinter($driverUrl, $downloadPath, $extractPath, $pri
     return $true
 }
 
-function main($pushRoot, $printerCsv, $driverMap=$DRIVER_URL_MAP) {
+function old_main($pushRoot, $printerCsv, $driverMap=$DRIVER_URL_MAP) {
     $start_time = Get-Date
     log "Calling main(`n>>> -start_time $start_time`n>>> -pushRoot $pushRoot`n>>> -printerCsv $printerCsv`n>>> )" "darkgray"
     log "Starting [$(Get-Date)]" "white"
@@ -380,6 +433,57 @@ function main($pushRoot, $printerCsv, $driverMap=$DRIVER_URL_MAP) {
         }
     }
 
+function main($customerId, $pushRoot, $printerConfigUrl, $printerConfigPath, $driverMap=$DRIVER_URL_MAP) {
+    $start_time = Get-Date
+    log "Calling main(`n>>> -customerId=$customerId`n>>> -pushRoot=$pushRoot`n>>> -printerConfigUrl=$printerConfigUrl`n>>> -printerConfigPath=$printerConfigPath`n>>> -driverMap=$driverMap`n>>> )" "darkgray"
+    log "Starting [$(Get-Date)]" "white"
+    $printerInstalledTally = 0
+    $n = 1
+    $downloadPath = "$pushRoot\printerTemp.zip"
+    $extractPath = $pushRoot
+    if(!(Test-Path $pushRoot)) { mkdir $pushRoot; }
+    $printers = buildPrinterLod $customerId $PRINTER_CONFIG_URL $PRINTER_CONFIG_PATH
+
+    $driverMap = convertDriverMap $pushRoot $driverMap
+    foreach ($p in $printers) {
+        $printerName = "$($p.location) ($($p.color)) - $($p.driverName)" 
+        log "($n) Installing printer [$printerName]" "white"
+        $driver = (getDriverInfo $($p.driverName) $driverMap)
+        if ($driver) {
+            $res = downloadAndInstallPrinter -driverUrl $driver.url -downloadPath $downloadPath -extractPath $extractPath -printerName $printerName -printer $p -driverPath $driver.path
+        } else {          
+            $res = $false
+        }
+        if($res){
+            $rcolor = "white"
+            $printerInstalledTally += 1
+        } else {
+            $rcolor = "Red"
+            }
+        log "...Is [ $($p.location) ($($p.color)) - $($p.driverName) ] installed?: $res" $rcolor
+        log "...Time taken for printer install [$printerName]: $((Get-Date).Subtract($start_time).TotalSeconds) second(s)" "gray"
+        $n +=1
+        }
+    $delta = $((Get-Date).Subtract($start_time))
+    $secondsElapsed = 0+(($delta.Minutes)*60)+($delta.Seconds)
+    log "Stopping [$(Get-Date)]" "white"
+    log "---------------------------------------------------------" "Gray"
+    log "|"
+    log "|   Successfully installed $printerInstalledTally of $($printers.Length) printers in $secondsElapsed seconds." "Green"
+    log "|"
+    log "---------------------------------------------------------" "Gray"
+    log ""
+    $gp = get-printer
+    log "[Total Installed Printers]:  [$($gp.Length)]" "Green"
+    $n = 0
+    $gp.Name | foreach {
+        $n+=1
+        log "($n) $_" "Green"
+        }
+    }
+
 clear
-main $pushRoot $printerCsv $driverMap
+#main $pushRoot $printerCsv $DRIVER_URL_MAP
+main $customerId $pushRoot $PRINTER_CONFIG_URL $PRINTER_CONFIG_PATH $DRIVER_URL_MAP
+
 timeout /t -1

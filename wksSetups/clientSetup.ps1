@@ -8,9 +8,10 @@
 # 5. QA the above
 
 param(
+    [string]$customerId= "",
     $configPath= "DEFAULT", #$(throw "No config provided.  Please include the path to a config csv."),
     $pushPath = "C:\Push\",
-    $logLevel = -1
+    $logLevel = 1
     )
 
 function log ($str, $fc="white"){
@@ -53,25 +54,134 @@ function download($driverUrl, $downloadPath) {
     return (Test-Path $downloadPath)
 }
 
-function buildConfig($configPath) {
-    log "Calling buildConfig(`n>>> -configPath `"$configPath`"`n>>> )" "darkgray"
-    log "...importing csv [$configPath]" "gray"
-    $csv = Import-Csv $configPath
-    log ">> Imported csv..." "darkgray"
-    log $csv "darkgray"
-    log "...building config." "gray"
-    $config = @{}
-    $config['pathToSetupFolder'] = $csv[0].pathToSetupFolder
-    $config['pathToPrinterConfig'] = $csv[0].pathToPrinterConfig
-    $config['domain'] = $csv[0].domain
-    $config['install_these'] = @()
-    $config['customerId'] = $csv[0].customerId
-    foreach ($r in $csv) {
-        $config.install_these += $r.install_these
-        }
-    log "...built config with length [$($config.Length)] and keys[$($config.Keys)]" "gray"
-    return $config
+function buildPrinterLod($customerId, $configUrl, $configPath, $public="1") {
+    log "Calling convertCsvToLod(`n>>> -customerId `"$customerId`n>>> -configUrl `"$configUrl`"`n>>> -configPath `"$configPath`"`n>>> -public `"$public`"`n>>> )" "darkgray"
+    if(download $configUrl $configPath) {
+            $pmap = @{
+                "public"     = "Public";
+                "location"   = "location";
+                "driverName" = "driver";
+                "ip"         = "ip";
+                "driverPath" = "driverPath";
+                "color"      = "BW or Color"
+            }
+            $csv = import-csv $configPath
+            $temp = $csv | where {$_.GroupId -eq $customerId -and $_.Public -eq $public}
+
+            $lod = @()
+            foreach ($r in $csv) {
+                if (($r.GroupId -eq $customerId) -and ($r.Public -eq $public)) {
+                    $lod += $r
+                }
+            }
+            log "...located $($lod.Length) printer record(s)." "gray"
+
+            $printerLod = @()
+            foreach ($d in $lod){
+                    $p = @{}
+                    $pmap.keys | foreach {
+                        $p[$_] = $d.($pmap[$_])
+                    }
+                    $printerLod += $p
+                    log "      + adding printer [$($printerLod.Length)] to lod: $p" "darkgray"
+            }
+    } else {
+        log ">>ERROR: Could not download printer config from `"$url`"" "red"
     }
+    Remove-Item -Path $configPath
+    log "...returning lod with $($printerLod.Length) printer(s)." "gray"
+
+    return $printerLod
+}
+
+function validateCustomerId ($id) {
+    log "Calling validateCustomerId(`n>>> `$id=`"$id`"`n>>> )" "darkgray"
+    $id = $id.trim()
+    if(($id.Length -ne 3) -and ($id.getType().Name -ne "String")){
+        $res = $true
+    }else{
+        $res = $false
+    }
+    log "...validateCustomerId() returning $res for `$id:$id" "gray"
+    return $res
+}
+function promptForCustomerId($idList) {
+    log "Calling promptForCustomerId(`n>>> no args`n>>> )" "darkgray"    
+    $n = 0
+    $id = ""
+    $msg = "Please enter a valid customer id number..."
+    $idList | foreach {log "$($_.customerId) : $($_.customerAbbreviation) : $($_.account)" "white"}
+    while ($true) {
+        log "...id not validated. id=$id" "gray"
+        log $msg "White"
+        $id = Read-Host -Prompt "Customer Id"
+        $n += 1
+        if(validateCustomerId $id) {
+            log "...received valid user input.  Returning id: $id" "gray"
+            break
+        }
+        if ($n -gt 3){
+            $id = "001"
+            log "...failed to receive valid user input.  Returning id: $id" "gray"
+            break
+        }
+    }
+    return $id
+}
+
+function buildConfig($customerId, $configUrl, $configPath) {
+    log "Calling buildConfig(`n>>> -customerId `"$customerId`n>>> -configUrl `"$configUrl`"`n>>> -configPath `"$configPath`"`n>>>`n>>> )" "darkgray"
+    if(download $configUrl $configPath) {
+        $csv = import-csv $configPath
+        Remove-Item -Path $configPath
+    } else {
+        log ">>ERROR: Could not download config from `"$configUrl`"" "red"
+        $customerId = "001"
+    }
+    
+    if($customerId.Length -lt 3){
+        $customerId = promptForCustomerId ($csv)
+        log "User inputted customer id: $customerId; Len: $($customerId.Length)" "gray"
+    } else {
+        log "Script provided customer id: $customerId; Len: $($customerId.Length)" "gray"
+    }
+
+    if($customerId -eq "001") {
+        $config = @{
+            "install_these"=$Null;
+            "customerId"=$Null;
+            "pathToSetupFolder"=$Null;
+            "pathToPrinterConfig"=$Null;
+            "Domain"=$Null;
+        }
+        log "...no config provided.  Returning blank config." "white"
+    } else {
+        $lod = @()
+        foreach ($r in $csv) {
+            log ">check($($r.customerId) -eq $customerId)" "darkgray"
+            if ($r.customerId -eq $customerId) {
+                log "...located customerId.  $($r.customerId)" "gray"
+                $keys = $r.PSObject.Properties.Name
+                $c = @{}
+                $keys | foreach {
+                $c[$_] = $r[0].($_)
+                }
+                $lod += $c
+            }
+        }
+        log "...located $($lod.Length) config record(s)." "gray"
+        $config = $lod[0]               
+        
+        log "...returning config." "darkgray"
+        log ">{" "darkgray"
+        foreach ($k in $keys) {
+            log ">   `$config[$k] = $($config[$k])" "darkgray"
+        }
+        log ">}" "darkgray"
+    }
+
+    return $config
+}
 
 function runMainScript() {
     log "Calling runMainScript(`n>>> no args`n>>> )" "darkgray"
@@ -123,6 +233,11 @@ function moveClientDirs($pathToSetupFolder, $pushPath) {
     # preprocessing
     #$path = $pushPath.ToLower().Substring(0,$pushPath.IndexOf("push"))
     $path = "C:\"
+
+    if($pathToSetupFolder.Length -lt 5){
+        log ">> ERROR: `$pathToSetupFolder too short.  `$pathToSetupFolder=`"$pathToSetupFolder`"" "red"
+    }
+
     if($pathToSetupFolder[0] -ne "\") {
         $pathToSetupFolder = "\\$pathToSetupFolder"
         }
@@ -131,6 +246,7 @@ function moveClientDirs($pathToSetupFolder, $pushPath) {
     foreach ($dir in $dirs) {
         $remotePath = "$pathToSetupFolder$dir"
         $localPath = "C:\$dir"
+
 
         if (checkThatFolderIsCopied $remotePath $localPath) {
         #TODO: Need a deeper test to see if dir is complete.
@@ -160,12 +276,12 @@ function moveClientDirs($pathToSetupFolder, $pushPath) {
     return $res    
     } 
 
-function installPrinters($pathToPrinterConfig) {
-    log "Calling installPrinters(`n>>> pathToPrinterConfig=$pathToPrinterConfig`n>>> )" "darkgray"
+function installPrinters($customerId) {
+    log "Calling installPrinters(`n>>> customerId=$customerId`n>>> )" "darkgray"
     log "...opening a window for installing printers" "gray"
-    log "Calling {Start-Process PowerShell.exe -ArgumentList "-ExecutionPolicy Bypass -File \\192.168.1.24\technet\Scripts\PrinterInstalls\InstallPrinters.ps1 -printerCsv $pathToPrinterConfig -logLevel $logLevel" -Verb RunAs}" "yellow"
-    & {Start-Process PowerShell.exe -ArgumentList "-ExecutionPolicy Bypass -File \\192.168.1.24\technet\Scripts\PrinterInstalls\InstallPrinters.ps1 -printerCsv $pathToPrinterConfig -logLevel $logLevel" -Verb RunAs}
-    #PowerShell.exe -Command "& {Start-Process PowerShell.exe -ArgumentList '-ExecutionPolicy Bypass -File \\192.168.1.24\technet\Scripts\PrinterInstalls\InstallPrinters.ps1 -printerCsv \\192.168.1.24\technet\Setup_Workstations\Setup_MPA_Workstation\push\printerDrivers\config_Printers_MPA.csv' -Verb RunAs}"
+    $call = "-ExecutionPolicy Bypass -File \\192.168.1.24\technet\Scripts\PrinterInstalls\InstallPrinters.ps1 -customerId $customerId -logLevel $logLevel"
+    log "Calling {Start-Process PowerShell.exe -ArgumentList `"$call`" -Verb RunAs}" "white"
+    & {Start-Process PowerShell.exe -ArgumentList $call -Verb RunAs}
     }
 
 function joinToDomain($domain) {
@@ -219,16 +335,19 @@ function clientQA($config, $scriptPath) {
     $fileName = "$scriptPath\QAStandardSetup.ps1"
     $logLevel = $script:logLevel
     log "fileName=$fileName"
-    log "Calling {Start-Process PowerShell.exe -ArgumentList '-ExecutionPolicy Bypass -File $fileName -logLevel 1' -Verb RunAs}" "yellow"
-    & {Start-Process PowerShell.exe -ArgumentList "-ExecutionPolicy Bypass -File $fileName -logLevel 1" -Verb RunAs}
+    $call = "-ExecutionPolicy Bypass -File $fileName -customerId $($c.customerId) -logLevel 1"
+    log "Calling {Start-Process PowerShell.exe -ArgumentList '$call' -Verb RunAs}" "yellow"
+    & {Start-Process PowerShell.exe -ArgumentList $call -Verb RunAs}
+    #& {Start-Process PowerShell.exe -ArgumentList "-ExecutionPolicy Bypass -File $fileName -logLevel 1" -Verb RunAs}
    }
 
-function main ($configPath, $pushPath, $scriptPath) {
-    log "Calling main(`n>>> configPath=$configPath`n>>> )" "darkgray"
+function main ($customerId, $configUrl, $configPath, $pushPath, $scriptPath) {
+    log "Calling main(`n>>> customerId=$customerId`n>>> configUrl=$configUrl`n>>> configPath=$configPath`n>>> pushPath=$pushPath`n>>> scriptPath=$scriptPath`n>>> )" "darkgray"
     # -1. Run main script
     #runMainScript
     # 0. Import config from csv
-    $c = buildConfig $configPath 
+    #$c = buildConfig $configPath 
+    $c = buildConfig $customerId $configUrl $configPath
     # 1. move push nd user
     moveClientDirs $c.pathToSetupFolder $pushPath
     # 2. Install Nable agent
@@ -240,7 +359,7 @@ function main ($configPath, $pushPath, $scriptPath) {
     # 5. Turn on Bitlocker (must be done after secure boot is enabled)
     turnOnBitlocker
     # 6. install printers
-    installPrinters $c.pathToPrinterConfig
+    installPrinters $c.customerId
     # 7. QA the above
     timeout /t 30
     clientQA $c $scriptPath
@@ -248,11 +367,13 @@ function main ($configPath, $pushPath, $scriptPath) {
 
 clear
 # CONSTANTS
+$CONFIG_SETUPCLIENT_URL = "https://s3.amazonaws.com/aait/config_setupClient.csv"
+$CONFIG_SETUPCLIENT_PATH = "c:\push\config_setupClient.csv"
 $PUSH_PATH = "C:\Push";
 $SCRIPT_PATH = "\\192.168.1.24\technet\Scripts\wksSetups"
 $UNIPUSH_PATH = "\\192.168.1.24\technet\Setup_Workstations\UniversalPushFolder\Push";
 
-main $configPath $pushPath $SCRIPT_PATH
+main $customerId $CONFIG_SETUPCLIENT_URL $CONFIG_SETUPCLIENT_PATH $pushPath $SCRIPT_PATH
 #$c = buildConfig $configPath
 #clientQA $c $SCRIPT_PATH
 

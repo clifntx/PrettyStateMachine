@@ -140,5 +140,5 @@ $regkeys = @(
 
 clear
 main $regkeys
-pause
+#pause
 
