@@ -49,13 +49,15 @@ function download($driverUrl, $downloadPath) {
     return (Test-Path $downloadPath)
 }
 
-function validateCustomerId ($id) {
+function validateCustomerId ($id, $idList) {
     log "Calling validateCustomerId(`n>>> `$id=`"$id`"`n>>> )" "darkgray"
-    switch ($id) {
-        ($id.Length -ne 3) {$res=$false}
-        ($id.getType().Name -ne "String") {$res=$false}
-        default {$res = $true}
-    }
+    #switch ($id) {
+    #    ($id.Length -ne 3) {$res=$false}
+    #    ($id.getType().Name -ne "String") {$res=$false}
+    #    default {$res = $true}
+    #}
+    $res = $idList.contains($id)
+
     log "...validateCustomerId() returning $res for `$id:$id" "gray"
     return $res
 }
@@ -64,13 +66,15 @@ function promptForCustomerId($idList) {
     $n = 0
     $id = ""
     $msg = "Please enter a valid customer id number..."
-    $idList | foreach {log "$($_.customerId) : $($_.customerAbbreviation) : $($_.account)" "white"}
+    $idList | foreach {
+        log "$($_.customerId) : $($_.customerAbbreviation) : $($_.account)" "white"
+    }
     while ($true) {
         log "...id not validated. id=$id" "gray"
         log $msg "White"
-        $id = Read-Host -Prompt "Customer Id"
+        $id = ([string](Read-Host -Prompt "Customer Id")).trim()
         $n += 1
-        if(validateCustomerId $id) {
+        if(validateCustomerId $id $idList.customerId) {
             log "...received valid user input.  Returning id: $id" "gray"
             break
         }
@@ -93,7 +97,7 @@ function buildConfig($customerId, $configUrl, $configPath) {
         $customerId = "001"
     }
     
-    if($customerId.Length -lt 3){
+    if($customerId.Length -ne 3){
         $customerId = promptForCustomerId ($csv)
         log "User inputted customer id: $customerId; Len: $($customerId.Length)" "gray"
     } else {
@@ -798,7 +802,6 @@ function main ($customerId, $configUrl, $configPath) {
     qaPrinters $c.customerId
     #log "!! [ ] Connected to correct wifi ssid"
     qaWifi
-    log "!! [ ] SharePoint sync complete"
     log "!! [ ] Correct push folder(s) is transferred and current"
     log "!! [ ] Sharepoint site(s) set up correctly"
     log "!! [ ] Office is connected to correct account"

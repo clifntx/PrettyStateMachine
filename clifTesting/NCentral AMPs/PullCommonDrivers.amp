@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><Policy ID="4efa8b9a-8939-42d5-a97d-e8cd404447f0" Name="PullCommonDrivers" Description="UHVsbCBjb21tb24gZHJpdmVycyBhbmQgc2V0IHRoZW0gdXAgaW4gdGhlIHB1c2ggZm9kbGVyLgoKVGhpcyBpbmNsdWRlcyBhbGwgY29tbW9uIHByaW50ZXIgZHJpdmVycyB1c2VkIGluIGluc3RhbGxhdGlvbiBhdXRvbWF0aW9uLg==" Version="2.0.5.39" RemoteCategory="0" ExecutionType="Local" PS3ObjectCount="0">
+  <Object ID="{81c1db56-92a4-4cbc-8dd8-4948eca9f2e4}" Type="{B6FA6D8B-EEAA-47A6-8463-7F9A4F5BBB6E}" Data="&lt;xml&gt;&lt;GlobalVariables&gt;&lt;Parameter ParameterName=&quot;extractpath&quot; Label=&quot;extractpath&quot; ParameterType=&quot;string&quot; Value=&quot;c:\push\&quot; /&gt;&lt;Parameter ParameterName=&quot;dlpath&quot; Label=&quot;dlpath&quot; ParameterType=&quot;string&quot; Value=&quot;c:\push\pushedfiles.zip&quot; /&gt;&lt;Parameter ParameterName=&quot;dlurl_cb&quot; Label=&quot;dlurl_cb&quot; ParameterType=&quot;string&quot; Value=&quot;https://s3.amazonaws.com/aait/Toshiba.zip&quot; /&gt;&lt;Parameter ParameterName=&quot;dlurl_rw&quot; Label=&quot;dlurl_rw&quot; ParameterType=&quot;string&quot; Value=&quot;http://radiantnova.com/aait/drivers/common_drivers.zip&quot; /&gt;&lt;/GlobalVariables&gt;&lt;/xml&gt;" />
+  <LinkManager xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.datacontract.org/2004/07/PolicyExecutor">
+    <hashset xmlns:d2p1="http://schemas.datacontract.org/2004/07/System" />
+  </LinkManager>
+  <Activity mc:Ignorable="sads sap" x:Class="Policy Builder" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:mva="clr-namespace:Microsoft.VisualBasic.Activities;assembly=System.Activities" xmlns:p="clr-namespace:PolicyExecutor;assembly=PolicyExecutionEngine" xmlns:sads="http://schemas.microsoft.com/netfx/2010/xaml/activities/debugger" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=mscorlib" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <x:Members>
+      <x:Property Name="PolicyGUID" Type="InArgument(x:String)" />
+    </x:Members>
+    <sap:VirtualizedContainerService.HintSize>584,1026</sap:VirtualizedContainerService.HintSize>
+    <mva:VisualBasic.Settings>Assembly references and imported namespaces serialized as XML namespaces</mva:VisualBasic.Settings>
+    <p:PolicySequence DisplayName="Policy Builder" sap:VirtualizedContainerService.HintSize="584,1026" mva:VisualBasic.Settings="Assembly references and imported namespaces serialized as XML namespaces">
+      <p:PolicySequence.Activities>
+        <p:FolderExists Folder_Item="{x:Null}" Folder_ItemProp="{x:Null}" AssemblyName="PolicyExecutionEngine, Version=2.0.5.39, Culture=neutral, PublicKeyToken=null" Conditional="[FolderExists_Conditional]" DisplayName="Folder Exists" Folder="c:\push\Kyocera" Folder_DisplayArg="c:\push\Kyocera" sap:VirtualizedContainerService.HintSize="548,88" Moniker="452a53f9-5bd1-467c-8e9a-33711885243d" Result="[FolderExists_Result]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="ExecuteDebug" TypeName="FolderExists" m_bTextLinkChange="False">
+          <sap:WorkflowViewStateService.ViewState>
+            <scg:Dictionary x:TypeArguments="x:String, x:Object">
+              <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+            </scg:Dictionary>
+          </sap:WorkflowViewStateService.ViewState>
+        </p:FolderExists>
+        <p:IfObject Condition_Item="{x:Null}" Condition_ItemProp="{x:Null}" Value_Item="{x:Null}" Value_ItemProp="{x:Null}" Variable_Item="{x:Null}" Variable_ItemProp="{x:Null}" AssemblyName="PolicyExecutionEngine, Version=2.0.5.39, Culture=neutral, PublicKeyToken=null" Condition="does not equal" Condition_DisplayArg="does not equal" DisplayName="If" sap:VirtualizedContainerService.HintSize="548,675" Moniker="6d8d0b92-927a-4b35-9cb8-a2558055814b" Result="[IfObject_Result]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="None" TypeName="IfObject" Value_DisplayArg="True" Value_Type="x:String" Variable="[FolderExists_Conditional]" Variable_DisplayArg="Folder Exists.Conditional" Variable_Type="x:String" m_bTextLinkChange="False">
+          <p:IfObject.IfOption>
+            <p:SequenceActivity DisplayName="Then" sap:VirtualizedContainerService.HintSize="516,474" Name="SequenceActivity">
+              <p:SequenceActivity.Activities>
+                <p:DownloadFileFromURL OverwriteExistingFile_Item="{x:Null}" OverwriteExistingFile_ItemProp="{x:Null}" RemoteFileURL_Item="{x:Null}" RemoteFileURL_ItemProp="{x:Null}" SaveAsFileName_Item="{x:Null}" SaveAsFileName_ItemProp="{x:Null}" AssemblyName="PolicyExecutionEngine, Version=2.0.5.39, Culture=neutral, PublicKeyToken=null" DisplayName="Download File From URL" sap:VirtualizedContainerService.HintSize="478,160" Moniker="3d129ea9-08f0-48ab-8d1b-8c63b3641d86" OverwriteExistingFile="True" OverwriteExistingFile_DisplayArg="true" RemoteFileURL="https://s3.amazonaws.com/aait/common_drivers.zip" RemoteFileURL_DisplayArg="https://s3.amazonaws.com/aait/common_drivers.zip" Result="[DownloadFileFromURL_Result]" RunAsCurrentLoggedOnUser="False" SaveAsFileName="c:\push\pushedfiles.zip" SaveAsFileName_DisplayArg="c:\push\pushedfiles.zip" ScriptExecutionMethod="ExecuteDebug" TypeName="DownloadFileFromURL" m_bTextLinkChange="False" />
+                <p:ExtractCompressedFiles Destination_Item="{x:Null}" Destination_ItemProp="{x:Null}" FileName_Item="{x:Null}" FileName_ItemProp="{x:Null}" AssemblyName="PolicyExecutionEngine, Version=2.0.5.39, Culture=neutral, PublicKeyToken=null" Destination="c:\push\" Destination_DisplayArg="c:\push\" DisplayName="Extract Compressed files" FileName="c:\push\pushedfiles.zip" FileName_DisplayArg="c:\push\pushedfiles.zip" sap:VirtualizedContainerService.HintSize="478,124" Moniker="f5eff2cc-82d9-42d0-a039-4b5177b8ff0a" Result="[ExtractCompressedFiles_Result]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="ExecuteDebug" TypeName="ExtractCompressedFiles" m_bTextLinkChange="False" />
+              </p:SequenceActivity.Activities>
+              <p:SequenceActivity.Variables>
+                <Variable x:TypeArguments="x:Double" Name="DownloadFileFromURL_Result" />
+                <Variable x:TypeArguments="x:Double" Name="ExtractCompressedFiles_Result" />
+              </p:SequenceActivity.Variables>
+            </p:SequenceActivity>
+          </p:IfObject.IfOption>
+          <p:IfObject.Value>
+            <InArgument x:TypeArguments="x:Object">
+              <p:ObjectLiteral Value="True" />
+            </InArgument>
+          </p:IfObject.Value>
+        </p:IfObject>
+      </p:PolicySequence.Activities>
+      <p:PolicySequence.Variables>
+        <Variable x:TypeArguments="x:String" Default="c:\push\test\" Name="extractpath" />
+        <Variable x:TypeArguments="x:String" Default="c:\push\zip.zip" Name="dlpath" />
+        <Variable x:TypeArguments="x:String" Default="https://s3.amazonaws.com/aait/Toshiba.zip" Name="dlurl_cb" />
+        <Variable x:TypeArguments="x:String" Default="d" Name="dlurl_rw" />
+        <Variable x:TypeArguments="x:Double" Name="IfObject_Result" />
+        <Variable x:TypeArguments="x:String" Name="FolderExists_Conditional" />
+        <Variable x:TypeArguments="x:Double" Name="FolderExists_Result" />
+      </p:PolicySequence.Variables>
+    </p:PolicySequence>
+  </Activity>
+</Policy>

@@ -94,14 +94,15 @@ function buildPrinterLod($customerId, $configUrl, $configPath, $public="1") {
     return $printerLod
 }
 
-function validateCustomerId ($id) {
+function validateCustomerId ($id, $idList) {
     log "Calling validateCustomerId(`n>>> `$id=`"$id`"`n>>> )" "darkgray"
-    $id = $id.trim()
-    if(($id.Length -ne 3) -and ($id.getType().Name -ne "String")){
-        $res = $true
-    }else{
-        $res = $false
-    }
+    #switch ($id) {
+    #    ($id.Length -ne 3) {$res=$false}
+    #    ($id.getType().Name -ne "String") {$res=$false}
+    #    default {$res = $true}
+    #}
+    $res = $idList.contains($id)
+
     log "...validateCustomerId() returning $res for `$id:$id" "gray"
     return $res
 }
@@ -110,13 +111,15 @@ function promptForCustomerId($idList) {
     $n = 0
     $id = ""
     $msg = "Please enter a valid customer id number..."
-    $idList | foreach {log "$($_.customerId) : $($_.customerAbbreviation) : $($_.account)" "white"}
+    $idList | foreach {
+        log "$($_.customerId) : $($_.customerAbbreviation) : $($_.account)" "white"
+    }
     while ($true) {
         log "...id not validated. id=$id" "gray"
         log $msg "White"
-        $id = Read-Host -Prompt "Customer Id"
+        $id = ([string](Read-Host -Prompt "Customer Id")).trim()
         $n += 1
-        if(validateCustomerId $id) {
+        if(validateCustomerId $id $idList.customerId) {
             log "...received valid user input.  Returning id: $id" "gray"
             break
         }
@@ -236,11 +239,13 @@ function moveClientDirs($pathToSetupFolder, $pushPath) {
 
     if($pathToSetupFolder.Length -lt 5){
         log ">> ERROR: `$pathToSetupFolder too short.  `$pathToSetupFolder=`"$pathToSetupFolder`"" "red"
+    }   
+    if($pathToSetupFolder[-1] -ne "\"){
+       $pathToSetupFolder = "$pathToSetupFolder\"
     }
-
     if($pathToSetupFolder[0] -ne "\") {
         $pathToSetupFolder = "\\$pathToSetupFolder"
-        }
+    }
     
     # copy push and user folder to computer
     foreach ($dir in $dirs) {

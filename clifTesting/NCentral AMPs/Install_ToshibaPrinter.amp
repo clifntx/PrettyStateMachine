@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><Policy ID="e8ecf41a-5039-479a-b0be-227ceda35ba9" Name="Install_ToshibaPrinter" Description="SW5zdGFsbF9Ub3NoaWJhUHJpbnRlcg==" Version="2.4.1.9" RemoteCategory="0" ExecutionType="Local" PS3ObjectCount="0">
+  <Object ID="{b7980913-b44f-4735-87df-75c5eb01e1d5}" Type="{B6FA6D8B-EEAA-47A6-8463-7F9A4F5BBB6E}" Data="&lt;xml&gt;&lt;Parameters&gt;&lt;Parameter ParameterName=&quot;printerIp&quot; Label=&quot;printerIp&quot; ParameterType=&quot;string&quot; Value=&quot;&quot; /&gt;&lt;Parameter ParameterName=&quot;printerLocation&quot; Label=&quot;printerLocation&quot; ParameterType=&quot;string&quot; Value=&quot;&quot; /&gt;&lt;/Parameters&gt;&lt;GlobalVariables&gt;&lt;Parameter ParameterName=&quot;driverUrl&quot; Label=&quot;driverUrl&quot; ParameterType=&quot;string&quot; Value=&quot;https://s3.amazonaws.com/aait/Toshiba_64bit.zip&quot; /&gt;&lt;Parameter ParameterName=&quot;savepath&quot; Label=&quot;savepath&quot; ParameterType=&quot;string&quot; Value=&quot;c:\push\temp.zip&quot; /&gt;&lt;Parameter ParameterName=&quot;driverName&quot; Label=&quot;driverName&quot; ParameterType=&quot;string&quot; Value=&quot;TOSHIBA Universal Printer 2&quot; /&gt;&lt;Parameter ParameterName=&quot;pathToPrinterDriver&quot; Label=&quot;pathToPrinterDriver&quot; ParameterType=&quot;string&quot; Value=&quot;c:\push\Printers\Toshiba\64bit\eSf6u.inf&quot; /&gt;&lt;Parameter ParameterName=&quot;pdir&quot; Label=&quot;pdir&quot; ParameterType=&quot;string&quot; Value=&quot;c:\Push\Printers\&quot; /&gt;&lt;Parameter ParameterName=&quot;log&quot; Label=&quot;log&quot; ParameterType=&quot;string&quot; Value=&quot;c:\Push\Printers\log_printerinstall.txt&quot; /&gt;&lt;Parameter ParameterName=&quot;version&quot; Label=&quot;version&quot; ParameterType=&quot;string&quot; Value=&quot;0.29&quot; /&gt;&lt;/GlobalVariables&gt;&lt;/xml&gt;" />
+  <LinkManager xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.datacontract.org/2004/07/PolicyExecutor">
+    <hashset xmlns:d2p1="http://schemas.datacontract.org/2004/07/System" />
+  </LinkManager>
+  <Activity mc:Ignorable="sads sap" x:Class="Policy Builder" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:mva="clr-namespace:Microsoft.VisualBasic.Activities;assembly=System.Activities" xmlns:p="clr-namespace:PolicyExecutor;assembly=PolicyExecutionEngine" xmlns:sads="http://schemas.microsoft.com/netfx/2010/xaml/activities/debugger" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=mscorlib" xmlns:sco="clr-namespace:System.Collections.ObjectModel;assembly=mscorlib" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <x:Members>
+      <x:Property Name="PolicyGUID" Type="InArgument(x:String)" />
+    </x:Members>
+    <sap:VirtualizedContainerService.HintSize>612,4297</sap:VirtualizedContainerService.HintSize>
+    <mva:VisualBasic.Settings>Assembly references and imported namespaces serialized as XML namespaces</mva:VisualBasic.Settings>
+    <p:PolicySequence DisplayName="Policy Builder" sap:VirtualizedContainerService.HintSize="612,4297" mva:VisualBasic.Settings="Assembly references and imported namespaces serialized as XML namespaces">
+      <p:PolicySequence.Activities>
+        <p:GetOSType AssemblyName="PolicyExecutionEngine, Version=2.2.0.116, Culture=neutral, PublicKeyToken=null" DisplayName="Get OS Type" sap:VirtualizedContainerService.HintSize="576,81" Moniker="bb40ad29-5730-4db5-b45d-9931894190c0" Result="[GetOSType_Result]" ResultString="[GetOSType_ResultString]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="ExecuteDebug" TypeName="GetOSType" Value="[GetOSType_Value]" m_bTextLinkChange="False">
+          <sap:WorkflowViewStateService.ViewState>
+            <scg:Dictionary x:TypeArguments="x:String, x:Object">
+              <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+            </scg:Dictionary>
+          </sap:WorkflowViewStateService.ViewState>
+        </p:GetOSType>
+        <p:FileExists File_Item="{x:Null}" File_ItemProp="{x:Null}" AssemblyName="PolicyExecutionEngine, Version=2.2.0.116, Culture=neutral, PublicKeyToken=null" Conditional="[FileExists_Conditional]" DisplayName="File Exists" File="[pathToPrinterDriver]" File_DisplayArg="Global Variables.pathToPrinterDriver" sap:VirtualizedContainerService.HintSize="576,88" Moniker="1f0b0f15-cc19-482f-930d-ce2282650657" Result="[FileExists_Result]" ResultString="[FileExists_ResultString]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="ExecuteDebug" TypeName="FileExists" m_bTextLinkChange="False">
+          <sap:WorkflowViewStateService.ViewState>
+            <scg:Dictionary x:TypeArguments="x:String, x:Object">
+              <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+            </scg:Dictionary>
+          </sap:WorkflowViewStateService.ViewState>
+        </p:FileExists>
+        <p:RunPowerShellScript AssemblyName="PolicyExecutionEngine, Version=2.2.0.116, Culture=neutral, PublicKeyToken=null" DisplayName="Run PowerShell Script" sap:VirtualizedContainerService.HintSize="576,348" Moniker="9951e03f-7f70-48d3-86f9-6b0d9de7f715" OutPut_64="[RunPowerShellScript_OutPut_64_3]" Result="[RunPowerShellScript_Result_3]" ResultString="[RunPowerShellScript_ResultString_3]" Results_x64="[RunPowerShellScript_Results_x64_3]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="ExecuteDebug" TypeName="RunPowerShellScript" genArgEvent="cfb700c6-1793-48f5-9af7-e593bea90cff" m_bTextLinkChange="False" script="ZgBpAGwAdABlAHIAIAB0AGkAbQBlAHMAdABhAG0AcAAgAHsAIgAkACgARwBlAHQALQBEAGEAdABlACAALQBVAEYAbwByAG0AYQB0ACAAIgBbACAAJQBiACUAZAAlAFkAIAAlAEgAOgAlAE0AOgAlAFMAIABdACIAKQA6ACAAJABfACIAfQANAAoADQAKAGkAZgAgACgAIQAoAFQAZQBzAHQALQBQAGEAdABoACAAJABwAGQAaQByACkAKQAgAHsAIABOAGUAdwAtAEkAdABlAG0AIAAtAFAAYQB0AGgAIAAkAHAAZABpAHIAIAAtAFQAeQBwAGUAIABkAGkAcgBlAGMAdABvAHIAeQB9AA0ACgANAAoAaQBmACAAKAAhACgAVABlAHMAdAAtAFAAYQB0AGgAIAAkAGwAbwBnACkAKQAgAHsAIABOAGUAdwAtAEkAdABlAG0AIAAtAFAAYQB0AGgAIAAkAGwAbwBnACAALQBUAHkAcABlACAAZgBpAGwAZQAgAH0ADQAKAA0ACgAkAHAAbgBhAG0AIAA9ACAAIgAkAHAAbABvAGMAIAAtACAAJABkAG4AYQBtACIADQAKAEEAZABkAC0AQwBvAG4AdABlAG4AdAAgAC0AUABhAHQAaAAgACQAbABvAGcAIAAtAFYAYQBsAHUAZQAgACgAIgBTAHQAYQByAHQAaQBuAGcAIABUAG8AcwBoAGkAYgBhACAAUAByAGkAbgB0AGUAcgAgAEkAbgBzAHQAYQBsAGwAIABzAGMAcgBpAHAAdAAgAHYAZQByAHMAaQBvAG4AIAAkAHYAIAAiACAAfAAgAHQAaQBtAGUAcwB0AGEAbQBwACkADQAKAEEAZABkAC0AQwBvAG4AdABlAG4AdAAgAC0AUABhAHQAaAAgACQAbABvAGcAIAAtAFYAYQBsAHUAZQAgACgAIgAgACAAQQB0AHQAZQBtAHAAdABpAG4AZwAgAGkAbgBzAHQAYQBsAGwAIABvAGYAIAAkAHAAbgBhAG0AIgAgAHwAIAB0AGkAbQBlAHMAdABhAG0AcAApAA0ACgANAAoAJAB3AGkAbgBUAHkAcABlACAAPQAgADcAIAANAAoAaQBmACAAKAAkAG8AcwAuAEMAbwBuAHQAYQBpAG4AcwAoACIAUAByAG8AIAAxADAAIgApACkAIAB7ACAAJAB3AGkAbgBUAHkAcABlACAAPQAgADEAMAAgAH0ADQAKAA0ACgBBAGQAZAAtAEMAbwBuAHQAZQBuAHQAIAAtAFAAYQB0AGgAIAAkAGwAbwBnACAALQBWAGEAbAB1AGUAIAAoACIAIAAgAEQAZQB0AGUAYwB0AGUAZAAgAG8AcwA6ACAAVwBpAG4AZABvAHcAcwAgACQAdwBpAG4AVAB5AHAAZQAiACAAfAAgAHQAaQBtAGUAcwB0AGEAbQBwACkAOwANAAoADQAKACMAIABiAHkAcABhAHMAcwAgAHQAbwAgAHIAbwB1AHQAZQAgAGUAdgBlAHIAeQB0AGgAaQBuAGcAIAB0AG8AIAB0AGgAZQAgAHcAaQBuADcAIABpAG0AcABsAGUAbQBlAG4AdABhAHQAaQBvAG4ADQAKACQAdwBpAG4AVAB5AHAAZQAgAD0AIAA3ADsADQAKAHIAZQB0AHUAcgBuACAAJAB3AGkAbgBUAHkAcABlADsA">
+          <p:RunPowerShellScript.InArgs>
+            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="log" ArgType="string" DisplayArg="Global Variables.log" DisplayName="log" Name="log" isRequired="False">
+              <p:InArg.Arg>
+                <InArgument x:TypeArguments="x:String">[log]</InArgument>
+              </p:InArg.Arg>
+            </p:InArg>
+            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="pdir" ArgType="string" DisplayArg="Global Variables.pdir" DisplayName="pdir" Name="pdir" isRequired="False">
+              <p:InArg.Arg>
+                <InArgument x:TypeArguments="x:String">[pdir]</InArgument>
+              </p:InArg.Arg>
+            </p:InArg>
+            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="ploc" ArgType="string" DisplayArg="Input Parameters.printerLocation" DisplayName="ploc" Name="ploc" isRequired="False">
+              <p:InArg.Arg>
+                <InArgument x:TypeArguments="x:String">[printerLocation]</InArgument>
+              </p:InArg.Arg>
+            </p:InArg>
+            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="dnam" ArgType="string" DisplayArg="Global Variables.driverName" DisplayName="dnam" Name="dnam" isRequired="False">
+              <p:InArg.Arg>
+                <InArgument x:TypeArguments="x:String">[driverName]</InArgument>
+              </p:InArg.Arg>
+            </p:InArg>
+            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="os" ArgType="string" DisplayArg="Get OS Type.Value" DisplayName="os" Name="os" isRequired="False">
+              <p:InArg.Arg>
+                <InArgument x:TypeArguments="x:String">[GetOSType_Value]</InArgument>
+              </p:InArg.Arg>
+            </p:InArg>
+            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="v" ArgType="string" DisplayArg="Global Variables.version" DisplayName="v" Name="v" isRequired="False">
+              <p:InArg.Arg>
+                <InArgument x:TypeArguments="x:String">[version]</InArgument>
+              </p:InArg.Arg>
+            </p:InArg>
+          </p:RunPowerShellScript.InArgs>
+          <p:RunPowerShellScript.OutArgs>
+            <p:OutArg x:Key="winType" ArgType="string" DisplayName="winType" Name="winType">
+              <p:OutArg.Arg>
+                <OutArgument x:TypeArguments="x:String">[RunPowerShellScript_winType]</OutArgument>
+              </p:OutArg.Arg>
+            </p:OutArg>
+          </p:RunPowerShellScript.OutArgs>
+          <sap:WorkflowViewStateService.ViewState>
+            <scg:Dictionary x:TypeArguments="x:String, x:Object">
+              <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+            </scg:Dictionary>
+          </sap:WorkflowViewStateService.ViewState>
+        </p:RunPowerShellScript>
+        <p:IfObject Condition_Item="{x:Null}" Condition_ItemProp="{x:Null}" Value_Item="{x:Null}" Value_ItemProp="{x:Null}" Variable_Item="{x:Null}" Variable_ItemProp="{x:Null}" AssemblyName="PolicyExecutionEngine, Version=2.2.0.116, Culture=neutral, PublicKeyToken=null" Condition="equals" Condition_DisplayArg="equals" DisplayName="If" sap:VirtualizedContainerService.HintSize="576,1063" Moniker="adc07834-72ed-4403-b88b-32c29cb016de" Result="[IfObject_Result]" ResultString="[IfObject_ResultString]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="None" TypeName="IfObject" Value_DisplayArg="0" Value_Type="x:Double" Variable="[FileExists_Result]" Variable_DisplayArg="File Exists.Result" Variable_Type="x:Double" m_bTextLinkChange="False">
+          <p:IfObject.IfOption>
+            <p:SequenceActivity DisplayName="Then" sap:VirtualizedContainerService.HintSize="492,862" Name="SequenceActivity">
+              <p:SequenceActivity.Activities>
+                <p:RunPowerShellScript AssemblyName="PolicyExecutionEngine, Version=2.2.0.116, Culture=neutral, PublicKeyToken=null" DisplayName="Run PowerShell Script" sap:VirtualizedContainerService.HintSize="454,348" Moniker="a1c2db08-64d3-4eaf-ad10-29114466a20c" OutPut_64="[RunPowerShellScript_OutPut_64_1]" Result="[RunPowerShellScript_Result_1]" ResultString="[RunPowerShellScript_ResultString_1]" Results_x64="[RunPowerShellScript_Results_x64_1]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="ExecuteDebug" TypeName="RunPowerShellScript" genArgEvent="67eda7de-39e7-4a1d-9636-9e56bf456995" m_bTextLinkChange="False" script="ZgBpAGwAdABlAHIAIAB0AGkAbQBlAHMAdABhAG0AcAAgAHsAIgAkACgARwBlAHQALQBEAGEAdABlACAALQBVAEYAbwByAG0AYQB0ACAAIgBbACAAJQBiACUAZAAlAFkAIAAlAEgAOgAlAE0AOgAlAFMAIABdACIAKQA6ACAAJABfACIAfQANAAoAQQBkAGQALQBDAG8AbgB0AGUAbgB0ACAALQBQAGEAdABoACAAJABsAG8AZwAgAC0AVgBhAGwAdQBlACAAKAAiACAAIABpAG4AZgBQAGEAdABoACAAbgBvAHQAIABmAG8AdQBuAGQALgAgACAARABvAHcAbgBsAG8AYQBkAGkAbgBnACAAZgBpAGwAZQAuACIAIAB8ACAAdABpAG0AZQBzAHQAYQBtAHAAKQANAAoADQAKAA==">
+                  <p:RunPowerShellScript.InArgs>
+                    <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="log" ArgType="string" DisplayArg="Global Variables.log" DisplayName="log" Name="log" isRequired="False">
+                      <p:InArg.Arg>
+                        <InArgument x:TypeArguments="x:String">[log]</InArgument>
+                      </p:InArg.Arg>
+                    </p:InArg>
+                  </p:RunPowerShellScript.InArgs>
+                  <p:RunPowerShellScript.OutArgs>
+                    <scg:Dictionary x:TypeArguments="x:String, p:OutArg" />
+                  </p:RunPowerShellScript.OutArgs>
+                </p:RunPowerShellScript>
+                <p:DownloadFileFromURL OverwriteExistingFile_Item="{x:Null}" OverwriteExistingFile_ItemProp="{x:Null}" RemoteFileURL_Item="{x:Null}" RemoteFileURL_ItemProp="{x:Null}" SaveAsFileName_Item="{x:Null}" SaveAsFileName_ItemProp="{x:Null}" AssemblyName="PolicyExecutionEngine, Version=2.0.5.39, Culture=neutral, PublicKeyToken=null" DisplayName="Download File From URL" sap:VirtualizedContainerService.HintSize="454,160" Moniker="f3d48a71-5cde-4416-b96c-c2aab7f04d50" OverwriteExistingFile="True" OverwriteExistingFile_DisplayArg="true" RemoteFileURL="[driverUrl]" RemoteFileURL_DisplayArg="Global Variables.driverUrl" Result="[DownloadFileFromURL_Result]" ResultString="[DownloadFileFromURL_ResultString]" RunAsCurrentLoggedOnUser="False" SaveAsFileName="[savepath]" SaveAsFileName_DisplayArg="Global Variables.savepath" ScriptExecutionMethod="ExecuteDebug" TypeName="DownloadFileFromURL" m_bTextLinkChange="False" />
+                <p:ExtractCompressedFiles Destination_Item="{x:Null}" Destination_ItemProp="{x:Null}" FileName_Item="{x:Null}" FileName_ItemProp="{x:Null}" AssemblyName="PolicyExecutionEngine, Version=2.0.5.39, Culture=neutral, PublicKeyToken=null" Destination="[pdir]" Destination_DisplayArg="Global Variables.pdir" DisplayName="Extract Compressed files" FileName="[savepath]" FileName_DisplayArg="Global Variables.savepath" sap:VirtualizedContainerService.HintSize="454,124" Moniker="814369fb-c2de-4f0b-8cf7-ac8941bd846d" Result="[ExtractCompressedFiles_Result]" ResultString="[ExtractCompressedFiles_ResultString]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="ExecuteDebug" TypeName="ExtractCompressedFiles" m_bTextLinkChange="False" />
+              </p:SequenceActivity.Activities>
+              <p:SequenceActivity.Variables>
+                <Variable x:TypeArguments="x:Double" Name="DownloadFileFromURL_Result" />
+                <Variable x:TypeArguments="x:String" Name="DownloadFileFromURL_ResultString" />
+                <Variable x:TypeArguments="x:Double" Name="ExtractCompressedFiles_Result" />
+                <Variable x:TypeArguments="x:String" Name="ExtractCompressedFiles_ResultString" />
+                <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_OutPut_64_1" />
+                <Variable x:TypeArguments="x:Double" Name="RunPowerShellScript_Result_1" />
+                <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_ResultString_1" />
+                <Variable x:TypeArguments="scg:IEnumerable(x:Object)" Name="RunPowerShellScript_Results_x64_1" />
+              </p:SequenceActivity.Variables>
+            </p:SequenceActivity>
+          </p:IfObject.IfOption>
+          <p:IfObject.Value>
+            <InArgument x:TypeArguments="x:Object">
+              <p:ObjectLiteral>
+                <p:ObjectLiteral.Value>
+                  <x:Double>0</x:Double>
+                </p:ObjectLiteral.Value>
+              </p:ObjectLiteral>
+            </InArgument>
+          </p:IfObject.Value>
+        </p:IfObject>
+        <p:SwitchObject AllowDefault_Item="{x:Null}" AllowDefault_ItemProp="{x:Null}" Variable_Item="{x:Null}" Variable_ItemProp="{x:Null}" AllowDefault="True" AllowDefault_DisplayArg="true" AssemblyName="PolicyExecutionEngine, Version=2.2.0.116, Culture=neutral, PublicKeyToken=null" DisplayName="Switch" sap:VirtualizedContainerService.HintSize="576,2334" Moniker="012cd54b-a5ed-42ad-a0db-1dd7b3f4c095" Result="[SwitchObject_Result]" ResultString="[SwitchObject_ResultString]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="None" TypeName="SwitchObject" Variable="[RunPowerShellScript_winType]" Variable_DisplayArg="Run PowerShell Script.winType" Variable_Type="x:String" m_bTextLinkChange="False">
+          <p:SwitchObject.CaseSequence>
+            <p:CaseSequenceActivity DisplayName="" sap:VirtualizedContainerService.HintSize="544,1620" Name="CaseSequenceActivity">
+              <p:CaseSequenceActivity.Activities>
+                <p:CaseObject Value_Item="{x:Null}" Value_ItemProp="{x:Null}" AssemblyName="PolicyExecutionEngine, Version=2.2.0.116, Culture=neutral, PublicKeyToken=null" DisplayName="Case" sap:VirtualizedContainerService.HintSize="538,772" Moniker="2fd03cb7-7bc8-40d6-ab3f-b3da52f42925" Result="[CaseObject_Result_1]" ResultString="[CaseObject_ResultString_1]" RunAsCurrentLoggedOnUser="False" RunCase="False" ScriptExecutionMethod="None" TypeName="CaseObject" ValidationError="" Value_DisplayArg="7" Value_Type="x:String" m_bTextLinkChange="False">
+                  <p:CaseObject.ThenOption>
+                    <p:SequenceActivity DisplayName="Then" sap:VirtualizedContainerService.HintSize="506,672" Name="SequenceActivity">
+                      <p:SequenceActivity.Activities>
+                        <p:RunPowerShellScript AssemblyName="PolicyExecutionEngine, Version=2.2.0.116, Culture=neutral, PublicKeyToken=null" DisplayName="Run PowerShell Script" sap:VirtualizedContainerService.HintSize="468,522" Moniker="d8b0593b-7ade-47c3-ae70-79c64ca321ae" OutPut_64="[RunPowerShellScript_OutPut_64_2]" Result="[RunPowerShellScript_Result_2]" ResultString="[RunPowerShellScript_ResultString_2]" Results_x64="[RunPowerShellScript_Results_x64_2]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="ExecuteDebug" TypeName="RunPowerShellScript" genArgEvent="f27f7c1f-5672-4060-b244-a2e24be2829a" m_bTextLinkChange="False" script="ZgBpAGwAdABlAHIAIAB0AGkAbQBlAHMAdABhAG0AcAAgAHsAIgAkACgARwBlAHQALQBEAGEAdABlACAALQBVAEYAbwByAG0AYQB0ACAAIgBbACAAJQBiACUAZAAlAFkAIAAlAEgAOgAlAE0AOgAlAFMAIABdACIAKQA6ACAAJABfACIAfQANAAoADQAKACQAcABuAGEAbQBlACAAPQAgACQAcABsAG8AYwAgACsAIAAiACAALQAgACIAIAArACAAJABkAG4AYQBtAA0ACgANAAoAaQBmACgAIQAoAFQAZQBzAHQALQBQAGEAdABoACAAJABsAG8AZwApACkAIAB7ACAATgBlAHcALQBJAHQAZQBtACAALQBQAGEAdABoACAAJABsAG8AZwAgAC0AVAB5AHAAZQAgAGYAaQBsAGUAIAB9AA0ACgBBAGQAZAAtAEMAbwBuAHQAZQBuAHQAIAAtAFAAYQB0AGgAIAAkAGwAbwBnACAALQBWAGEAbAB1AGUAIAAoACIAIAAgAFMAdABhAHIAdABpAG4AZwAgAEkAbgBzAHQAYQBsAGwAIABzAGMAcgBpAHAAdAAgADwAdgBlAHIAcwBpAG8AbgA6ACAAJAB2ACAAPgAiACAAfAAgAHQAaQBtAGUAcwB0AGEAbQBwACkADQAKAEEAZABkAC0AQwBvAG4AdABlAG4AdAAgAC0AUABhAHQAaAAgACQAbABvAGcAIAAtAFYAYQBsAHUAZQAgACgAIgAgACAARQB4AGUAYwB1AHQAaQBuAGcAIABjAGEAcwBlACAAPAA3AD4AIgAgAHwAIAB0AGkAbQBlAHMAdABhAG0AcAApAA0ACgANAAoAUgBVAE4ARABMAEwAMwAyACAAcAByAGkAbgB0AHUAaQAuAGQAbABsACwAUAByAGkAbgB0AFUASQBFAG4AdAByAHkAIAAvAG4AIAAkAHAAbgBhAG0AIAAvAGQAbAAgAC8AcQANAAoAQQBkAGQALQBDAG8AbgB0AGUAbgB0ACAALQBQAGEAdABoACAAJABsAG8AZwAgAC0AVgBhAGwAdQBlACAAKAAiACAAIABSAGUAbQBvAHYAaQBuAGcAIABhAG4AeQAgAHAAcgBpAG4AdABlAHIAIAB3AGkAdABoACAAbgBhAG0AZQA6ACAAJABwAG4AYQBtACIAIAB8ACAAdABpAG0AZQBzAHQAYQBtAHAAKQANAAoADQAKAGMAcwBjAHIAaQBwAHQAIABjADoAXABXAGkAbgBkAG8AdwBzAFwAUwB5AHMAdABlAG0AMwAyAFwAUAByAGkAbgB0AGkAbgBnAF8AQQBkAG0AaQBuAF8AUwBjAHIAaQBwAHQAcwBcAGUAbgAtAFUAUwBcAHAAcgBuAHAAbwByAHQALgB2AGIAcwAgAC0AYQAgAC0AcgAgACQAcABvAHIAdAAgAC0AaAAgACQAcABpAHAAIAAtAG8AIAByAGEAdwAgAC0AbgAgADkAMQAwADAAIAAvAHEADQAKAEEAZABkAC0AQwBvAG4AdABlAG4AdAAgAC0AUABhAHQAaAAgACQAbABvAGcAIAAtAFYAYQBsAHUAZQAgACgAIgAgACAAUABvAHIAdAAgAGkAbgBzAHQAYQBsAGwAZQBkADoAIAAkAHAAbwByAHQAIgAgAHwAIAB0AGkAbQBlAHMAdABhAG0AcAApAA0ACgANAAoAcgB1AG4AZABsAGwAMwAyACAAcAByAGkAbgB0AHUAaQAuAGQAbABsACwAUAByAGkAbgB0AFUASQBFAG4AdAByAHkAIAAvAGkAZgAgAC8AYgAgACQAcABuAGEAbQBlACAALwBmACAAJABpAG4AZgBwAGEAdABoACAALwByACAAJABwAG8AcgB0ACAALwBtACAAJABkAG4AYQBtACAALwBaACAALwBxAA0ACgBBAGQAZAAtAEMAbwBuAHQAZQBuAHQAIAAtAFAAYQB0AGgAIAAkAGwAbwBnACAALQBWAGEAbAB1AGUAIAAoACIAIAAgAFAAcgBpAG4AdABlAHIAIABpAG4AcwB0AGEAbABsAGUAZAA6ACAAJABwAG4AYQBtACIAIAB8ACAAdABpAG0AZQBzAHQAYQBtAHAAKQANAAoA">
+                          <p:RunPowerShellScript.InArgs>
+                            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="dnam" ArgType="string" DisplayArg="Global Variables.driverName" DisplayName="dnam" Name="dnam" isRequired="False">
+                              <p:InArg.Arg>
+                                <InArgument x:TypeArguments="x:String">[driverName]</InArgument>
+                              </p:InArg.Arg>
+                            </p:InArg>
+                            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="pip" ArgType="string" DisplayArg="Input Parameters.printerIp" DisplayName="pip" Name="pip" isRequired="False">
+                              <p:InArg.Arg>
+                                <InArgument x:TypeArguments="x:String">[printerIp]</InArgument>
+                              </p:InArg.Arg>
+                            </p:InArg>
+                            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="ploc" ArgType="string" DisplayArg="Input Parameters.printerLocation" DisplayName="ploc" Name="ploc" isRequired="False">
+                              <p:InArg.Arg>
+                                <InArgument x:TypeArguments="x:String">[printerLocation]</InArgument>
+                              </p:InArg.Arg>
+                            </p:InArg>
+                            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="infpath" ArgType="string" DisplayArg="Global Variables.pathToPrinterDriver" DisplayName="infpath" Name="infpath" isRequired="False">
+                              <p:InArg.Arg>
+                                <InArgument x:TypeArguments="x:String">[pathToPrinterDriver]</InArgument>
+                              </p:InArg.Arg>
+                            </p:InArg>
+                            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="v" ArgType="string" DisplayArg="Global Variables.version" DisplayName="v" Name="v" isRequired="False">
+                              <p:InArg.Arg>
+                                <InArgument x:TypeArguments="x:String">[version]</InArgument>
+                              </p:InArg.Arg>
+                            </p:InArg>
+                            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="log" ArgType="string" DisplayArg="Global Variables.log" DisplayName="log" Name="log" isRequired="False">
+                              <p:InArg.Arg>
+                                <InArgument x:TypeArguments="x:String">[log]</InArgument>
+                              </p:InArg.Arg>
+                            </p:InArg>
+                            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="os" ArgType="string" DisplayArg="Get OS Type.Value" DisplayName="os" Name="os" isRequired="False">
+                              <p:InArg.Arg>
+                                <InArgument x:TypeArguments="x:String">[GetOSType_Value]</InArgument>
+                              </p:InArg.Arg>
+                            </p:InArg>
+                          </p:RunPowerShellScript.InArgs>
+                          <p:RunPowerShellScript.OutArgs>
+                            <scg:Dictionary x:TypeArguments="x:String, p:OutArg" />
+                          </p:RunPowerShellScript.OutArgs>
+                        </p:RunPowerShellScript>
+                      </p:SequenceActivity.Activities>
+                      <p:SequenceActivity.Variables>
+                        <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_OutPut_64_2" />
+                        <Variable x:TypeArguments="x:Double" Name="RunPowerShellScript_Result_2" />
+                        <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_ResultString_2" />
+                        <Variable x:TypeArguments="scg:IEnumerable(x:Object)" Name="RunPowerShellScript_Results_x64_2" />
+                      </p:SequenceActivity.Variables>
+                    </p:SequenceActivity>
+                  </p:CaseObject.ThenOption>
+                  <p:CaseObject.Value>
+                    <InArgument x:TypeArguments="x:Object">
+                      <p:ObjectLiteral Value="7" />
+                    </InArgument>
+                  </p:CaseObject.Value>
+                </p:CaseObject>
+                <p:CaseObject Value_Item="{x:Null}" Value_ItemProp="{x:Null}" AssemblyName="PolicyExecutionEngine, Version=2.2.0.116, Culture=neutral, PublicKeyToken=null" DisplayName="Case" sap:VirtualizedContainerService.HintSize="538,772" Moniker="6cacc483-78de-485f-aa10-84d5c3676c74" Result="[CaseObject_Result]" ResultString="[CaseObject_ResultString]" RunAsCurrentLoggedOnUser="False" RunCase="False" ScriptExecutionMethod="None" TypeName="CaseObject" ValidationError="" Value_DisplayArg="10" Value_Type="x:String" m_bTextLinkChange="False">
+                  <p:CaseObject.ThenOption>
+                    <p:SequenceActivity DisplayName="Then" sap:VirtualizedContainerService.HintSize="506,672" Name="SequenceActivity">
+                      <p:SequenceActivity.Activities>
+                        <p:RunPowerShellScript AssemblyName="PolicyExecutionEngine, Version=2.2.0.116, Culture=neutral, PublicKeyToken=null" DisplayName="Run PowerShell Script" sap:VirtualizedContainerService.HintSize="468,522" Moniker="836bd7b0-b024-4f36-8ae8-1e0c9a97ef8f" OutPut_64="[RunPowerShellScript_OutPut_64]" Result="[RunPowerShellScript_Result]" ResultString="[RunPowerShellScript_ResultString]" Results_x64="[RunPowerShellScript_Results_x64]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="ExecuteDebug" TypeName="RunPowerShellScript" genArgEvent="5db25f4f-71bb-44f5-bdcf-cfa640c90efc" m_bTextLinkChange="False" script="ZgBpAGwAdABlAHIAIAB0AGkAbQBlAHMAdABhAG0AcAAgAHsAIgAkACgARwBlAHQALQBEAGEAdABlACAALQBVAEYAbwByAG0AYQB0ACAAIgBbACAAJQBiACUAZAAlAFkAIAAlAEgAOgAlAE0AOgAlAFMAIABdACIAKQA6ACAAJABfACIAfQANAAoADQAKACQAcABuAGEAbQBlACAAPQAgACQAcABsAG8AYwAgACsAIAAiACAALQAgACIAIAArACAAJABkAG4AYQBtAA0ACgANAAoAaQBmACgAIQAoAFQAZQBzAHQALQBQAGEAdABoACAAJABsAG8AZwApACkAIAB7ACAATgBlAHcALQBJAHQAZQBtACAALQBQAGEAdABoACAAJABsAG8AZwAgAC0AVAB5AHAAZQAgAGYAaQBsAGUAIAB9AA0ACgBBAGQAZAAtAEMAbwBuAHQAZQBuAHQAIAAtAFAAYQB0AGgAIAAkAGwAbwBnACAALQBWAGEAbAB1AGUAIAAoACIAIAAgAEUAeABlAGMAdQB0AGkAbgBnACAAYwBhAHMAZQAgADwAMQAwAD4AIgAgAHwAIAB0AGkAbQBlAHMAdABhAG0AcAApAA0ACgANAAoAcABuAHAAdQB0AGkAbAAuAGUAeABlACAALQBpACAALQBhACAAJABpAG4AZgBQAGEAdABoAA0ACgBBAGQAZAAtAEMAbwBuAHQAZQBuAHQAIAAtAFAAYQB0AGgAIAAkAGwAbwBnACAALQBWAGEAbAB1AGUAIAAoACIAIAAgAEEAZABkAGUAZAAgAGQAcgBpAHYAZQByACAAdABvACAAZAByAGkAdgBlAHIAIABzAHQAbwByAGUAIABmAHIAbwBtACAAJABpAG4AZgBQAGEAdABoAC4AIAAgAGAAbgAgAEkAbgBzAHQAYQBsAGwAaQBuAGcAIABkAHIAaQB2AGUAcgAuAC4ALgAiACAAfAAgAHQAaQBtAGUAcwB0AGEAbQBwACkADQAKAA0ACgBBAGQAZAAtAFAAcgBpAG4AdABlAHIARAByAGkAdgBlAHIAIAAkAGQAbgBhAG0ADQAKAEEAZABkAC0AQwBvAG4AdABlAG4AdAAgAC0AUABhAHQAaAAgACQAbABvAGcAIAAtAFYAYQBsAHUAZQAgACgAIgAgACAASQBuAHMAdABhAGwAbABlAGQAIABkAHIAaQB2AGUAcgAgACQAZABuAGEAbQAuACAAIABgAG4AIABJAG4AcwB0AGEAbABsAGkAbgBnACAAcABvAHIAdAAuAC4ALgAiACAAfAAgAHQAaQBtAGUAcwB0AGEAbQBwACkADQAKAA0ACgBBAGQAZAAtAFAAcgBpAG4AdABlAHIAUABvAHIAdAAgAC0ATgBhAG0AZQAgACgAIgBJAFAAXwAiACAAKwAgACQAcABpAHAAKQAgAC0AUAByAGkAbgB0AGUAcgBIAG8AcwB0AEEAZABkAHIAZQBzAHMAIAAkAHAAaQBwAA0ACgBBAGQAZAAtAEMAbwBuAHQAZQBuAHQAIAAtAFAAYQB0AGgAIAAkAGwAbwBnACAALQBWAGEAbAB1AGUAIAAoACIAIAAgAEkAbgBzAHQAYQBsAGwAZQBkACAAcABvAHIAdAA6ACAASQBQAF8AJABwAGkAcAAgAGAAbgAgAEkAbgBzAHQAYQBsAGwAaQBuAGcAIABwAHIAaQBuAHQAZQByAC4ALgAuACIAIAB8ACAAdABpAG0AZQBzAHQAYQBtAHAAKQANAAoADQAKAGkAZgAgACgAKABHAGUAdAAtAFAAcgBpAG4AdABlAHIAKQAuAE4AYQBtAGUALgBDAG8AbgB0AGEAaQBuAHMAKAAkAHAAbgBhAG0AZQApACkAIAB7ACAADQAKAAkAQQBkAGQALQBDAG8AbgB0AGUAbgB0ACAALQBQAGEAdABoACAAJABsAG8AZwAgAC0AVgBhAGwAdQBlACAAKAAiACAAIABBACAAcAByAGkAbgB0AGUAcgAgAG4AYQBtAGUAZAAgACQAcABuAGEAbQBlACAAaQBzACAAYQBsAHIAZQBhAGQAeQAgAHAAcgBlAHMAZQBuAHQAIABvAG4AIAB0AGgAaQBzACAAcwB5AHMAdABlAG0ALgAgACAAUgBlAG0AbwB2AGkAbgBnAC4ALgAuACIAIAB8ACAAdABpAG0AZQBzAHQAYQBtAHAAKQANAAoACQBSAGUAbQBvAHYAZQAtAFAAcgBpAG4AdABlAHIAIAAkAHAAbgBhAG0AZQANAAoACQBBAGQAZAAtAEMAbwBuAHQAZQBuAHQAIAAtAFAAYQB0AGgAIAAkAGwAbwBnACAALQBWAGEAbAB1AGUAIAAoACIAIAAgAE8AbABkACAAJABwAG4AYQBtAGUAIAByAGUAbQBvAHYAZQBkAC4AIAAgAFIAZQBpAG4AcwB0AGEAbABsAGkAbgBnAC4ALgAiACAAfAAgAHQAaQBtAGUAcwB0AGEAbQBwACkADQAKAH0ADQAKAA0ACgBBAGQAZAAtAFAAcgBpAG4AdABlAHIAIAAtAE4AYQBtAGUAIAAkAHAAbgBhAG0AZQAgAC0ARAByAGkAdgBlAHIATgBhAG0AZQAgACQAZABuAGEAbQAgAC0AUABvAHIAdABOAGEAbQBlACAAKAAiAEkAUABfACIAIAArACAAJABwAGkAcAApAA0ACgBBAGQAZAAtAEMAbwBuAHQAZQBuAHQAIAAtAFAAYQB0AGgAIAAkAGwAbwBnACAALQBWAGEAbAB1AGUAIAAoACIAIAAgAEkAbgBzAHQAYQBsAGwAZQBkACAAcAByAGkAbgB0AGUAcgAgACIAIAArACAAKAAkAHAAbABvAGMAIAArACAAJABkAG4AYQBtACkAIAB8ACAAdABpAG0AZQBzAHQAYQBtAHAAKQANAAoADQAKAEEAZABkAC0AQwBvAG4AdABlAG4AdAAgAC0AUABhAHQAaAAgACQAbABvAGcAIAAtAFYAYQBsAHUAZQAgACgAIgAgACAAQwBvAG0AcABsAGUAdABlAGQAIABJAG4AcwB0AGEAbABsACAAcwBjAHIAaQBwAHQAIgAgAHwAIAB0AGkAbQBlAHMAdABhAG0AcAApAA==">
+                          <p:RunPowerShellScript.InArgs>
+                            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="pip" ArgType="string" DisplayArg="Input Parameters.printerIp" DisplayName="pip" Name="pip" isRequired="False">
+                              <p:InArg.Arg>
+                                <InArgument x:TypeArguments="x:String">[printerIp]</InArgument>
+                              </p:InArg.Arg>
+                            </p:InArg>
+                            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="ploc" ArgType="string" DisplayArg="Input Parameters.printerLocation" DisplayName="ploc" Name="ploc" isRequired="False">
+                              <p:InArg.Arg>
+                                <InArgument x:TypeArguments="x:String">[printerLocation]</InArgument>
+                              </p:InArg.Arg>
+                            </p:InArg>
+                            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="dnam" ArgType="string" DisplayArg="Global Variables.driverName" DisplayName="dnam" Name="dnam" isRequired="False">
+                              <p:InArg.Arg>
+                                <InArgument x:TypeArguments="x:String">[driverName]</InArgument>
+                              </p:InArg.Arg>
+                            </p:InArg>
+                            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="log" ArgType="string" DisplayArg="Global Variables.log" DisplayName="log" Name="log" isRequired="False">
+                              <p:InArg.Arg>
+                                <InArgument x:TypeArguments="x:String">[log]</InArgument>
+                              </p:InArg.Arg>
+                            </p:InArg>
+                            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="v" ArgType="string" DisplayArg="Global Variables.version" DisplayName="v" Name="v" isRequired="False">
+                              <p:InArg.Arg>
+                                <InArgument x:TypeArguments="x:String">[version]</InArgument>
+                              </p:InArg.Arg>
+                            </p:InArg>
+                            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="infPath" ArgType="string" DisplayArg="Global Variables.pathToPrinterDriver" DisplayName="infPath" Name="infPath" isRequired="False">
+                              <p:InArg.Arg>
+                                <InArgument x:TypeArguments="x:String">[pathToPrinterDriver]</InArgument>
+                              </p:InArg.Arg>
+                            </p:InArg>
+                            <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="os" ArgType="string" DisplayArg="Get OS Type.Value" DisplayName="os" Name="os" isRequired="False">
+                              <p:InArg.Arg>
+                                <InArgument x:TypeArguments="x:String">[GetOSType_Value]</InArgument>
+                              </p:InArg.Arg>
+                            </p:InArg>
+                          </p:RunPowerShellScript.InArgs>
+                          <p:RunPowerShellScript.OutArgs>
+                            <scg:Dictionary x:TypeArguments="x:String, p:OutArg" />
+                          </p:RunPowerShellScript.OutArgs>
+                        </p:RunPowerShellScript>
+                      </p:SequenceActivity.Activities>
+                      <p:SequenceActivity.Variables>
+                        <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_OutPut_64" />
+                        <Variable x:TypeArguments="x:Double" Name="RunPowerShellScript_Result" />
+                        <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_ResultString" />
+                        <Variable x:TypeArguments="scg:IEnumerable(x:Object)" Name="RunPowerShellScript_Results_x64" />
+                      </p:SequenceActivity.Variables>
+                    </p:SequenceActivity>
+                  </p:CaseObject.ThenOption>
+                  <p:CaseObject.Value>
+                    <InArgument x:TypeArguments="x:Object">
+                      <p:ObjectLiteral Value="10" />
+                    </InArgument>
+                  </p:CaseObject.Value>
+                </p:CaseObject>
+              </p:CaseSequenceActivity.Activities>
+              <p:CaseSequenceActivity.Variables>
+                <Variable x:TypeArguments="x:String" Name="CaseObject_ResultString" />
+                <Variable x:TypeArguments="x:Double" Name="CaseObject_Result" />
+                <Variable x:TypeArguments="x:String" Name="CaseObject_ResultString_1" />
+                <Variable x:TypeArguments="x:Double" Name="CaseObject_Result_1" />
+              </p:CaseSequenceActivity.Variables>
+            </p:CaseSequenceActivity>
+          </p:SwitchObject.CaseSequence>
+          <p:SwitchObject.DefaultOption>
+            <p:SequenceActivity DisplayName="Default" sap:VirtualizedContainerService.HintSize="492,498" Name="SequenceActivity">
+              <p:SequenceActivity.Activities>
+                <p:RunPowerShellScript AssemblyName="PolicyExecutionEngine, Version=2.2.0.116, Culture=neutral, PublicKeyToken=null" DisplayName="Run PowerShell Script" sap:VirtualizedContainerService.HintSize="454,348" Moniker="35b1f049-1904-4b44-b011-822f8805dc84" OutPut_64="[RunPowerShellScript_OutPut_64_4]" Result="[RunPowerShellScript_Result_4]" ResultString="[RunPowerShellScript_ResultString_4]" Results_x64="[RunPowerShellScript_Results_x64_4]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="ExecuteDebug" TypeName="RunPowerShellScript" genArgEvent="61b211a2-3118-4288-bc2f-6708d307e0b4" m_bTextLinkChange="False" script="ZgBpAGwAdABlAHIAIAB0AGkAbQBlAHMAdABhAG0AcAAgAHsAIgAkACgARwBlAHQALQBEAGEAdABlACAALQBVAEYAbwByAG0AYQB0ACAAIgBbACAAJQBiACUAZAAlAFkAIAAlAEgAOgAlAE0AOgAlAFMAIABdACIAKQA6ACAAJABfACIAfQANAAoADQAKAEEAZABkAC0AQwBvAG4AdABlAG4AdAAgAC0AUABhAHQAaAAgACQAbABvAGcAIAAtAFYAYQBsAHUAZQAgACgAIgA+AD4AIABGAEEASQBMADoAIABGAGEAaQBsAGUAZAAgAHQAbwAgAGYAaQBuAGQAIABjAGEAcwBlACAAZgBvAHIAIABvAHMAOgAgACQAbwBzACIAIAB8ACAAdABpAG0AZQBzAHQAYQBtAHAAKQA=">
+                  <p:RunPowerShellScript.InArgs>
+                    <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="log" ArgType="string" DisplayArg="Global Variables.log" DisplayName="log" Name="log" isRequired="False">
+                      <p:InArg.Arg>
+                        <InArgument x:TypeArguments="x:String">[log]</InArgument>
+                      </p:InArg.Arg>
+                    </p:InArg>
+                    <p:InArg Item="{x:Null}" ItemProp="{x:Null}" x:Key="os" ArgType="string" DisplayArg="Get OS Type.Value" DisplayName="os" Name="os" isRequired="False">
+                      <p:InArg.Arg>
+                        <InArgument x:TypeArguments="x:String">[GetOSType_Value]</InArgument>
+                      </p:InArg.Arg>
+                    </p:InArg>
+                  </p:RunPowerShellScript.InArgs>
+                  <p:RunPowerShellScript.OutArgs>
+                    <scg:Dictionary x:TypeArguments="x:String, p:OutArg" />
+                  </p:RunPowerShellScript.OutArgs>
+                </p:RunPowerShellScript>
+              </p:SequenceActivity.Activities>
+              <p:SequenceActivity.Variables>
+                <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_OutPut_64_4" />
+                <Variable x:TypeArguments="x:Double" Name="RunPowerShellScript_Result_4" />
+                <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_ResultString_4" />
+                <Variable x:TypeArguments="scg:IEnumerable(x:Object)" Name="RunPowerShellScript_Results_x64_4" />
+              </p:SequenceActivity.Variables>
+            </p:SequenceActivity>
+          </p:SwitchObject.DefaultOption>
+        </p:SwitchObject>
+      </p:PolicySequence.Activities>
+      <p:PolicySequence.Variables>
+        <Variable x:TypeArguments="x:String" Name="FileExists_Conditional" />
+        <Variable x:TypeArguments="x:String" Name="FileExists_ResultString" />
+        <Variable x:TypeArguments="x:Double" Name="FileExists_Result" />
+        <Variable x:TypeArguments="x:String" Name="IfObject_ResultString" />
+        <Variable x:TypeArguments="x:Double" Name="IfObject_Result" />
+        <Variable x:TypeArguments="x:String" Name="GetOSType_Value" />
+        <Variable x:TypeArguments="x:String" Name="GetOSType_ResultString" />
+        <Variable x:TypeArguments="x:Double" Name="GetOSType_Result" />
+        <Variable x:TypeArguments="x:String" Name="SwitchObject_ResultString" />
+        <Variable x:TypeArguments="x:Double" Name="SwitchObject_Result" />
+        <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_OutPut_64_3" />
+        <Variable x:TypeArguments="x:Double" Name="RunPowerShellScript_Result_3" />
+        <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_ResultString_3" />
+        <Variable x:TypeArguments="scg:IEnumerable(x:Object)" Name="RunPowerShellScript_Results_x64_3" />
+        <Variable x:TypeArguments="x:String" Name="RunPowerShellScript_winType" />
+        <Variable x:TypeArguments="x:String" Default="10.10.10.29" Name="printerIp" />
+        <Variable x:TypeArguments="x:String" Default="29" Name="printerLocation" />
+        <Variable x:TypeArguments="x:String" Default="https://s3.amazonaws.com/aait/Toshiba_64bit.zip" Name="driverUrl" />
+        <Variable x:TypeArguments="x:String" Default="c:\push\temp.zip" Name="savepath" />
+        <Variable x:TypeArguments="x:String" Default="TOSHIBA Universal Printer 2" Name="driverName" />
+        <Variable x:TypeArguments="x:String" Default="c:\push\Printers\Toshiba\64bit\eSf6u.inf" Name="pathToPrinterDriver" />
+        <Variable x:TypeArguments="x:String" Default="c:\Push\Printers\" Name="pdir" />
+        <Variable x:TypeArguments="x:String" Default="c:\Push\Printers\log_printerinstall.txt" Name="log" />
+        <Variable x:TypeArguments="x:String" Default="0.29" Name="version" />
+      </p:PolicySequence.Variables>
+    </p:PolicySequence>
+  </Activity>
+</Policy>

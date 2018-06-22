@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><Policy ID="94d3cd00-dbb2-4e87-b921-e196a8477431" Name="Install_Printer_Newbury" Description="UHVzaCBkcml2ZQ0KRXh0cmFjdCBkcml2ZXINClJlbW92ZSBleGlzdGluZyBwcmludGVyDQpJbnN0YWxsIHByaW50ZXI=" Version="2.0.5.39" RemoteCategory="0" ExecutionType="Local" PS3ObjectCount="0">
+  <Object ID="{05c8e99c-cb0e-4454-95a6-48d7a5aeab05}" Type="{B6FA6D8B-EEAA-47A6-8463-7F9A4F5BBB6E}" Data="&lt;xml /&gt;" />
+  <LinkManager xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.datacontract.org/2004/07/PolicyExecutor">
+    <hashset xmlns:d2p1="http://schemas.datacontract.org/2004/07/System" />
+  </LinkManager>
+  <Activity mc:Ignorable="sap sads" x:Class="Policy Builder" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:mva="clr-namespace:Microsoft.VisualBasic.Activities;assembly=System.Activities" xmlns:p="clr-namespace:PolicyExecutor;assembly=PolicyExecutionEngine" xmlns:sads="http://schemas.microsoft.com/netfx/2010/xaml/activities/debugger" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=mscorlib" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <x:Members>
+      <x:Property Name="PolicyGUID" Type="InArgument(x:String)" />
+    </x:Members>
+    <sap:VirtualizedContainerService.HintSize>504,1109</sap:VirtualizedContainerService.HintSize>
+    <mva:VisualBasic.Settings>Assembly references and imported namespaces serialized as XML namespaces</mva:VisualBasic.Settings>
+    <p:PolicySequence DisplayName="Policy Builder" sap:VirtualizedContainerService.HintSize="504,1109" mva:VisualBasic.Settings="Assembly references and imported namespaces serialized as XML namespaces">
+      <p:PolicySequence.Activities>
+        <p:DownloadFileFromURL OverwriteExistingFile_Item="{x:Null}" OverwriteExistingFile_ItemProp="{x:Null}" RemoteFileURL_Item="{x:Null}" RemoteFileURL_ItemProp="{x:Null}" SaveAsFileName_Item="{x:Null}" SaveAsFileName_ItemProp="{x:Null}" AssemblyName="PolicyExecutionEngine, Version=2.0.5.39, Culture=neutral, PublicKeyToken=null" DisplayName="Download File From URL" sap:VirtualizedContainerService.HintSize="468,160" Moniker="a8877d6f-e93c-4d41-8ee6-45f070392221" OverwriteExistingFile="True" OverwriteExistingFile_DisplayArg="true" RemoteFileURL="https://s3.amazonaws.com/aait/Kyocera.zip" RemoteFileURL_DisplayArg="https://s3.amazonaws.com/aait/Kyocera.zip" Result="[DownloadFileFromURL_Result]" RunAsCurrentLoggedOnUser="False" SaveAsFileName="c:\push\pushedfiles.zip" SaveAsFileName_DisplayArg="c:\push\pushedfiles.zip" ScriptExecutionMethod="ExecuteDebug" TypeName="DownloadFileFromURL" m_bTextLinkChange="False" />
+        <p:ExtractCompressedFiles Destination_Item="{x:Null}" Destination_ItemProp="{x:Null}" FileName_Item="{x:Null}" FileName_ItemProp="{x:Null}" AssemblyName="PolicyExecutionEngine, Version=2.0.5.39, Culture=neutral, PublicKeyToken=null" Destination="c:\push\" Destination_DisplayArg="c:\push\" DisplayName="Extract Compressed files" FileName="c:\push\pushedfiles.zip" FileName_DisplayArg="c:\push\pushedfiles.zip" sap:VirtualizedContainerService.HintSize="468,124" Moniker="44865e97-ac8a-44f6-ae4a-ffa5f9f5ac95" Result="[ExtractCompressedFiles_Result]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="ExecuteDebug" TypeName="ExtractCompressedFiles" m_bTextLinkChange="False" />
+        <p:RunScript genArgEvent="{x:Null}" AssemblyName="PolicyExecutionEngine, Version=2.0.5.39, Culture=neutral, PublicKeyToken=null" DisplayName="Run Script" sap:VirtualizedContainerService.HintSize="468,522" Moniker="469be3e0-7a90-4ec7-9dd4-19d65a6f79d5" OutPut_64="[RunScript_OutPut_64]" Result="[RunScript_Result]" ResultString="[RunScript_ResultString]" Results_x64="[RunScript_Results_x64]" RunAsCurrentLoggedOnUser="False" ScriptExecutionMethod="ExecuteDebug" TypeName="RunScript" m_bTextLinkChange="False" script="cnVuZGxsMzIgcHJpbnR1aS5kbGwsUHJpbnRVSUVudHJ5IC9kbCAvbiJOZXdidXJ5IEhvdXNlIC0gS3lvY2VyYSBUQVNLYWxmYSAzNTAxaSINCmNzY3JpcHQgYzpcV2luZG93c1xTeXN0ZW0zMlxQcmludGluZ19BZG1pbl9TY3JpcHRzXGVuLVVTXHBybnBvcnQudmJzIC1hIC1yIElQXzEwLjAuMC4yMDAgLWggMTAuMC4wLjIwMCAtbyByYXcgLW4gOTEwMApydW5kbGwzMiBwcmludHVpLmRsbCxQcmludFVJRW50cnkgL2lmIC9iICJOZXdidXJ5IEhvdXNlIC0gS3lvY2VyYSBUQVNLYWxmYSAzNTAxaSIgL2YgQzpcUHVzaFxUb3NoaWJhXDY0Yml0XGVTZjZ1LmluZiAvciAiSVBfMTAuMC4wLjIwMCIgL20gIkt5b2NlcmEgVEFTS2FsZmEgMzUwMWkiIC9a">
+          <p:RunScript.InArgs>
+            <scg:Dictionary x:TypeArguments="x:String, p:InArg" />
+          </p:RunScript.InArgs>
+          <p:RunScript.OutArgs>
+            <scg:Dictionary x:TypeArguments="x:String, p:OutArg" />
+          </p:RunScript.OutArgs>
+        </p:RunScript>
+      </p:PolicySequence.Activities>
+      <p:PolicySequence.Variables>
+        <Variable x:TypeArguments="x:Double" Name="DownloadFileFromURL_Result" />
+        <Variable x:TypeArguments="x:Double" Name="ExtractCompressedFiles_Result" />
+        <Variable x:TypeArguments="x:String" Name="RunScript_OutPut_64" />
+        <Variable x:TypeArguments="x:Double" Name="RunScript_Result" />
+        <Variable x:TypeArguments="x:String" Name="RunScript_ResultString" />
+        <Variable x:TypeArguments="scg:IEnumerable(x:Object)" Name="RunScript_Results_x64" />
+      </p:PolicySequence.Variables>
+    </p:PolicySequence>
+  </Activity>
+</Policy>
