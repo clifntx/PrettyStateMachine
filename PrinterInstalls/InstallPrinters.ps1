@@ -120,24 +120,37 @@ function buildPrinterLod($customerId, $configUrl, $configPath, $public="1") {
             }
             $csv = import-csv $configPath
             $temp = $csv | where {$_.GroupId -eq $customerId -and $_.Public -eq $public}
-
+            
             $lod = @()
             foreach ($r in $csv) {
                 if (($r.GroupId -eq $customerId) -and ($r.Public -eq $public)) {
-                    $lod += $r
+                    $keys = $r | Get-Member -MemberType NoteProperty | select -ExpandProperty Name    
+                    $nr = $r
+                    $keys | foreach {
+                        $nr.$_ = ($r.$_).trim()
+                    }
+                    $lod += $nr
+                    log "  + adding @{$nr}" "darkgray"
+                } else {
+                    #log "  - ($($r.GroupId) -eq $customerId) -and ($($r.Public) -eq $public)=$(($r.GroupId -eq $customerId) -and ($r.Public -eq $public))" "darkgray"
+                    pass
                 }
             }
-            log "...located $($lod.Length) printer record(s)." "gray"
-
+            log "...located and cleaned $($lod.Length) printer record(s)." "gray"
             $printerLod = @()
+            log "Building printer Lod: [" "gray"
             foreach ($d in $lod){
                     $p = @{}
+                    $pstr = ""
                     $pmap.keys | foreach {
                         $p[$_] = $d.($pmap[$_])
+                        $pstr += "`"$_`"=`"$($p.$_)`"; "
                     }
+                    log "    + @{$pstr}"     "darkgray"
                     $printerLod += $p
-                    log "      + adding printer [$($printerLod.Length)] to lod: $p" "darkgray"
             }
+            log "]" "gray"
+            log "...added [$($printerLod.Length)] printers to printerLod:" "gray"
     } else {
         log ">>ERROR: Could not download printer config from `"$configUrl`"" "red"
     }
@@ -161,6 +174,13 @@ function getDriverInfo($driverName, $driverMap) {
             return $driver
         } else {
             log "...Failed to locate [$driverName] in driverMap." "Red"
+            foreach ($d in $driverMap){
+                log "{"
+                $_.keys | foreach {
+                    log "$_=$($d[$_])"
+                }
+                log "}"
+            }
             return $false
             }
 }
@@ -247,7 +267,7 @@ function waitForPrinterInstallToComplete($printerName) {
     }
 
 function installPrinter($name, $loc, $ip, $driver, $driverPath) {
-    log "Calling installPrinter(`n>>> -name $name`n>>> -loc $loc`n>>> -ip $ip`n>>> -driver $driver`n>>> -driverPath $driverPath`n>>> )" "darkgray"
+    log "Calling installPrinter(`n>>> -name=`"$name`"`n>>> -loc=`"$loc`"`n>>> -ip=`"$ip`"`n>>> -driver=`"$driver`"`n>>> -driverPath=`"$driverPath`"`n>>> )" "darkgray"
     
     $port = "IP_" + $ip    
     log "...Creating port [$port] at ip [$ip]." "Gray"
