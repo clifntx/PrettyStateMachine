@@ -366,7 +366,7 @@ function main ($customerId, $configUrl, $configPath, $pushPath, $scriptPath) {
     # 6. install printers
     installPrinters $c.customerId
     # 7. QA the above
-    timeout /t 30
+    timeout /t 360
     clientQA $c $scriptPath
     }
 

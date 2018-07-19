@@ -25,6 +25,26 @@ function log ($str, $fc="white"){
     }
 }
 
+function logLod($lod){
+    log " Calling logLod(`n>>> -lod $lod`n>>> )" "darkgray"
+    $tlod = @(
+        @{"name"="Name1";"data"="data1"},
+        @{"name"="Name2";"data"="data2"},
+        @{"name"="Name3";"data"="data3"}
+    )
+    log "writing lod with length $($lod.length)" "gray"
+    $n = 0
+    foreach ($d in $lod) {
+        log "  [$n]:{" "gray"
+        $d.keys | foreach {
+            log "    k[$_]: `"$($d[$_])`"" "gray"
+        }
+        log "  }" "gray"
+        $n += 1
+    }
+
+}
+
 function download($driverUrl, $downloadPath) {
     log " Calling download(`n>>> -driverUrl $driverUrl`n>>> -downloadPath $downloadPath`n>>> )" "darkgray"
     try {
@@ -192,46 +212,6 @@ function old_buildConfig($customerId) {
     
     return $config
     }
-
-function buildPrinterLod($customerId, $configUrl, $configPath, $public="1") {
-    log "Calling convertCsvToLod(`n>>> -customerId `"$customerId`n>>> -configUrl `"$configUrl`"`n>>> -configPath `"$configPath`"`n>>> -public `"$public`"`n>>> )" "darkgray"
-    if(download $configUrl $configPath) {
-            $pmap = @{
-                "public"     = "Public";
-                "location"   = "location";
-                "driverName" = "driver";
-                "ip"         = "ip";
-                "driverPath" = "driverPath";
-                "color"      = "BW or Color"
-            }
-            $csv = import-csv $configPath
-            $temp = $csv | where {$_.GroupId -eq $customerId -and $_.Public -eq $public}
-
-            $lod = @()
-            foreach ($r in $csv) {
-                if (($r.GroupId -eq $customerId) -and ($r.Public -eq $public)) {
-                    $lod += $r
-                }
-            }
-            log "...located $($lod.Length) printer record(s)." "gray"
-
-            $printerLod = @()
-            foreach ($d in $lod){
-                    $p = @{}
-                    $pmap.keys | foreach {
-                        $p[$_] = $d.($pmap[$_])
-                    }
-                    $printerLod += $p
-                    log "      + adding printer [$($printerLod.Length)] to lod: $p" "darkgray"
-            }
-    } else {
-        log ">>ERROR: Could not download printer config from `"$url`"" "red"
-    }
-    Remove-Item -Path $configPath
-    log "...returning lod with $($printerLod.Length) printer(s)." "gray"
-
-    return $printerLod
-}
 
 function checkForSecureBoot {
     log "Calling keysAreCorrect(`n>>> no args`n>>> )" "darkgray"    
@@ -660,20 +640,94 @@ function qaAV {
     }
 }
 
+function downloadPrinterConfig ($configUrl, $configPath) {
+    log "Calling downloadPrinterConfig(`n>>> configUrl `"$configUrl`n>>> configPath `"$configPath`"`n>>> )" "darkgray"
+    try {
+        $wc = New-Object System.Net.WebClient
+        $wc.DownloadFile($configUrl, $configPath)
+    } catch [System.Management.Automation.MethodInvocationException] {
+        log ">> CAUGHT ERROR: <MethodInvocationException> Cannot access url [$configUrl] ..." "Yellow"
+        log ">> CAUGHT ERROR: $PSItem" "Yellow"
+        return $false
+    } catch {
+        log "E!"
+        log ">> UNCAUGHT ERROR: $PSItem" "red"
+        log ">> UNCAUGHT ERROR: $($Error[0].Exception.GetType().fullname)" "red"
+        return $false
+        }
+    return (test-path $configPath)
+}
+
+function buildPrinterLod($customerId, $configUrl, $configPath, $public="1") {
+    log "Calling convertCsvToLod(`n>>> -customerId `"$customerId`n>>> -configUrl `"$configUrl`"`n>>> -configPath `"$configPath`"`n>>> -public `"$public`"`n>>> )" "darkgray"
+    if(downloadPrinterConfig $configUrl $configPath) {
+            $pmap = @{
+                "public"     = "Public";
+                "location"   = "location";
+                "driverName" = "driver";
+                "ip"         = "ip";
+                "driverPath" = "driverPath";
+                "color"      = "BW or Color"
+            }
+            $csv = import-csv $configPath
+            #$temp = $csv | where {$_.GroupId -eq $customerId -and $_.Public -eq $public}
+            
+            $lod = @()
+            foreach ($r in $csv) {
+                if (($r.GroupId -eq $customerId) -and ($r.Public -eq $public)) {
+                    $rkeys = $r | Get-Member -MemberType NoteProperty | select -ExpandProperty Name    
+                    $nr = $r
+                    $rkeys | foreach {
+                        $nr.$_ = ($r.$_).trim()
+                    }
+                    #$nr | Add-Member -NotePropertyName name -NotePropertyValue "$($r.location.trim()) - $($r.driverName.trim())"
+                    $lod += $nr
+                    log "  + adding @{$nr}" "darkgray"
+                } else {
+                    #log "  - ($($r.GroupId) -eq $customerId) -and ($($r.Public) -eq $public)=$(($r.GroupId -eq $customerId) -and ($r.Public -eq $public))" "darkgray"
+                }
+            }
+            log "...located and cleaned $($lod.Length) printer record(s)." "gray"
+            $printerLod = @()
+            log "Building printer Lod: [" "gray"
+            foreach ($d in $lod){
+                    $p = @{}
+                    $pstr = ""
+                    $pmap.keys | foreach {
+                        $p[$_] = $d.($pmap[$_])
+                        $pstr += "`"$_`"=`"$($p.$_)`"; "
+                    }
+                    log "    + @{$pstr}"     "darkgray"
+                    $printerLod += $p
+            }
+            log "]" "gray"
+            log "...added [$($printerLod.Length)] printers to printerLod:" "gray"
+    } else {
+        log ">>ERROR: Could not download printer config from `"$configUrl`"" "red"
+    }
+    Remove-Item -Path $configPath
+    log "...returning lod with $($printerLod.Length) printer(s)." "gray"
+
+    return $printerLod
+}
+
 function checkPrinters ($customerId) {
     log "Calling checkPrinters `n>>> `$customerId=$customerId`n>>> )" "darkgray"
     log "...checking printers." "gray"
     $PRINTER_CONFIG_URL = "https://s3.amazonaws.com/aait/config_Printers.csv"
     $PRINTER_CONFIG_PATH = "c:\push\config_Printer.csv"
-
+    #$printerInstallScriptPath = "\\192.168.1.24\technet\Scripts\PrinterInstalls\InstallPrinters.ps1"
     $plod = buildPrinterLod $customerId $PRINTER_CONFIG_URL $PRINTER_CONFIG_PATH
+
+    logLod $plod
+
     log "...checking for $($plod.length) printers." "gray"
     $printers = Get-Printer
     log "...discovered $($plod.length) printers." "gray"
 
     $res = @()
     foreach ($p in $plod) {
-        $printerName = "$($p.location) ($($p.color)) - $($p.driverName)"
+        $printerName = "$($p.location) - $($p.driverName)"
         $printersShouldBe += $printerName
         if (($printers.Name) -contains $printerName) {
             log "!!     + $printerName is installed." "gray"
@@ -706,16 +760,29 @@ function qaPrinters ($customerId) {
         }
     }
 }
-function remediatePrinters($customerId) {
-    log "Calling remediatePrinters(`n>>> customerId=$customerId`n>>> )" "darkgray"
-    log "...opening a window for installing printers" "gray"
-    $call = "-ExecutionPolicy Bypass -File \\192.168.1.24\technet\Scripts\PrinterInstalls\InstallPrinters.ps1 -customerId $customerId -logLevel $logLevel"
-    log "Calling {Start-Process PowerShell.exe -ArgumentList `"$call`" -Verb RunAs}" "gray"
-    & {Start-Process PowerShell.exe -ArgumentList $call -Verb RunAs}
+
+function OLD_qaPrinters ($customerId) {
+    log "Calling qaPrinters `n>>> no args`n>>> )" "darkgray"
+    
+    if($customerId.Length -lt 1) {
+        log "!! [ ] Installed printers:" "white"
+        foreach ($p in (get-printer).Name) {
+            log  "!!       $p" "yellow"
+        }
+    } else {
+        
+        log "...opening a window for printer qa" "gray"
+        $call = "-ExecutionPolicy Bypass -File \\192.168.1.24\technet\Scripts\PrinterInstalls\InstallPrinters.ps1 -customerId $customerId -logLevel $logLevel -qa 1"
+        log "Calling {Start-Process PowerShell.exe -ArgumentList `"$call`" -Verb RunAs}" "white"
+        & {Start-Process PowerShell.exe -ArgumentList $call -Verb RunAs}
+
+    }
 }
 
 function checkWifi ($shouldBeWifiSSIDs){
     $ssids = @()
+    $shouldBeWifiSSIDs = $shouldBeWifiSSIDs.split(",").trim()
+    log "`$shouldBeWifiSSIDs = [$shouldBeWifiSSIDs]" "gray"
     $text = netsh wlan show profiles
     $wifi = $text[9..($text.Length-2)]
     $wifi | foreach {
@@ -734,23 +801,23 @@ function checkWifi ($shouldBeWifiSSIDs){
             $flag = $false            
         }
     }
-    log "SSIDs should be: [$([system.String]::Join(", ", $shouldBeWifiSSIDs))]" "yellow"
-
-    return ($res, $ssids)
+    return ($flag, $ssids)
 }
-function qaWifi {
+function qaWifi ($shouldBeWifiSSIDs){
     log "Calling qaWifi `n>>> no args`n>>> )" "darkgray"
-    log "!! [ ] Connected to correct wifi ssid"
-    $res = checkWifi @("")
-    $res[1] | foreach {
-        log "!!       $_" "yellow"
+    $res = checkWifi $shouldBeWifiSSIDs
+
+    if ($res[0]){
+        log "!! [X] Connected to correct wifi ssid" "green"
+    } else {
+        log "!! [ ] Connected to correct wifi ssid" "red"
+        log "       ..SSIDs should be: [$([system.String]::Join(", ", $shouldBeWifiSSIDs))]" "yellow"
+        $res[1] | foreach {
+            log "!!       $_" "yellow"
+        }
     }
-#    $text = netsh wlan show profiles
-#    $wifi = $text[9..$text.Length]
-#    $wifi | foreach {
-#        log "!!       $(-join $_[27..$_.Length])" "yellow"
-#        }
-    }
+
+}
 
 function checkOutlook {
     & 'C:\Program Files (x86)\Microsoft Office\root\Office16\OUTLOOK.EXE'
@@ -801,7 +868,7 @@ function main ($customerId, $configUrl, $configPath) {
     #log "[ ] Correct printers installed. No superfluous printers installed."
     qaPrinters $c.customerId
     #log "!! [ ] Connected to correct wifi ssid"
-    qaWifi
+    qaWifi $c.wifi
     log "!! [ ] Correct push folder(s) is transferred and current"
     log "!! [ ] Sharepoint site(s) set up correctly"
     log "!! [ ] Office is connected to correct account"
@@ -829,5 +896,6 @@ $UNIPUSH_PATH = "\\192.168.1.24\technet\Setup_Workstations\UniversalPushFolder\P
 $DEFAULT_CONFIG_PATH = "\\192.168.1.24\technet\Scripts\setupConfigs\config_setupClient__DEFAULT.csv"
 
 main $customerId $CONFIG_SETUPCLIENT_URL $CONFIG_SETUPCLIENT_PATH
+#checkPrinters $customerId
 
 pause
