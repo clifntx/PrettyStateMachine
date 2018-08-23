@@ -1,6 +1,6 @@
 ﻿param(
     [string]$configCsv = "",
-    $logLevel = -1
+    $logLevel = 2
     )
 
 function log ($str, $fc="white"){
@@ -72,12 +72,12 @@ function getStorageSize($drive=$null){
         Add-Member -InputObject $_ -NotePropertyName "UsedSpace" -NotePropertyValue ($_.Size - $_.FreeSpace)
     }
     if ($drive -eq $null) {
-        $sum = sum $data.Size
+        $sum = sum $data.FreeSpace
         return $sum/1Gb
     }else{
         $data | foreach {
             if($_.DeviceID -contains ($drive + ":")){
-                return $_.Size/1Gb
+                return $_.FreeSpace/1Gb
             }
         }
     }
@@ -188,8 +188,8 @@ function moveAndDeleteDirContents ($dir){
     }
 }
 
-function checkToSeeIfDirIsEmpty ($pathToDir){
-    log "Calling checkToSeeIfDirIsEmpty(`n>>> `$pathToDir=$pathToDir`n>>> )" "darkgray"  
+function checkToSeeIfDirIsEmpty ($pathToDir, $quiet=$false){
+    log "Calling checkToSeeIfDirIsEmpty(`n  >>> `$pathToDir=$pathToDir`n  >>>`$quiet=$quiet`n  >>> )" "darkgray"  
     log "verifiying that dir [$pathToDir] is empty." "gray"
     log "dir ($pathToDir).Length -lt 1" "darkgray"
     try { 
@@ -200,14 +200,18 @@ function checkToSeeIfDirIsEmpty ($pathToDir){
             $res = $true
         }
 
-        $remainingFiles = (dir $pathToDir -ErrorAction Stop).Length
-
-        if ($res){
-            log "Successfully deleted all contents of [$pathToDir]." "green"
-        }elseif ($remainingFiles -lt 10){
-            log "Successfully deleted almost all contents of [$pathToDir].  $remainingFiles remaining." "green"
-        }else{
-            log "Failed to delete contents of [$pathToDir].  $remainingFiles remaining" "red"        
+        $remainingFiles = (dir $pathToDir -EA SilentlyContinue).Length
+        if ($remainingFiles -lt 10){
+            $res = $true
+        }
+       
+       if(!($quiet)){
+            log "`$quiet==$quiet.  Logging result." "darkgray"
+            if ($res){
+                log "Successfully deleted pretty much all contents of [$pathToDir].  $remainingFiles remaining." "white"
+            }else{
+                log "Failed to delete contents of [$pathToDir].  $remainingFiles remaining" "red"        
+            }
         }
         return $res   
     } catch [System.Management.Automation.ItemNotFoundException] {
@@ -229,19 +233,20 @@ function deleteTempFiles (){
         “C:\Windows\Prefetch",
         “C:\Documents and Settings\Local Settings\temp”
         )
-    #delete the files from $tdirs recursively
-    $res = @()
-    $tdirs | foreach {
-        $r = deleteDirContents $_
-        $res += @{
-            "dir"=$_;
-            "res"=$r;
+    #check to see if the dirs are already empty
+    $res = checkTempDirs $true
+    #if dirs are not empty
+    if(!($res)){
+        #delete the files from $tdirs recursively
+        $tdirs | foreach {
+            $r = deleteDirContents $_
         }
+        $res = checkTempDirs $true
     }
-    return !($res.res).contains($false)
+    return $res
 }
-function checkTempDirs (){
-    log "Calling checkTempDirs(`n>>> no args`n>>> )" "darkgray"
+function checkTempDirs ($quiet=$false){
+    log "Calling checkTempDirs(`n>>> `$quiet=$quiet`n>>> )" "darkgray"
     $tdirs = @(
         "c:\temp",
         “C:\Windows\Temp",
@@ -251,7 +256,7 @@ function checkTempDirs (){
     #check to see if  the files from $tdirs recursively
     $res = @()
     $tdirs | foreach {
-        $r = checkToSeeIfDirIsEmpty $_
+        $r = checkToSeeIfDirIsEmpty $_ $quiet
         $res += @{
             "dir"=$_;
             "res"=$r;
@@ -336,9 +341,11 @@ function runDiskCleanup(){
     $t = cleanmgr /verylowdisk
     $n = 0
     While($true) {
-        timeout /t 10
-        if(checkTempDirs){
-            log "...completed disk cleanup." "gray"            
+        Wait-Event -Timeout 5
+        if(checkTempDirs -quiet $true){
+            log "completed disk cleanup." "gray"            
+        } else {
+            log "waiting($n)" "gray"            
         }
         if($n -gt 5){
             log "WARNING: Timed out while waiting for Dick Cleanup." "Yellow"
@@ -358,16 +365,21 @@ function defragDisk($disk){
 function main(){
     #buildConfig
     $pre = getStorageSize
-    
-    deleteTempFiles
-    #deleteUserTempFiles
-    deleteOldUpdateFiles
-    emptyRecyclingBin
-    flushDNS
-    runDiskCleanup
-    checkTempDirs
+    $res = @()
+    $res += deleteTempFiles
+    #$res += deleteUserTempFiles
+    $res += deleteOldUpdateFiles
+    $res += emptyRecyclingBin
+    $res += flushDNS
+    $res += runDiskCleanup
+    $res += checkTempDirs
     $post = getStorageSize
-    log "Removed $($pre-$post) Gb of files." "green"
+
+    log "Maintenance complete:" "green"
+    log "  Pre maintenance free space: $pre Gb" "green"
+    log "  Pre maintenance free space: $pre Gb" "green"
+    log "  Post maintenance free space: $post Gb" "green"
+    log "  Removed $($pre-$post) Gb of files." "green"
 
     #runDiskCheck #schedules a diskcheck for the next reboot
     #Restart-Computer    
