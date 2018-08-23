@@ -178,8 +178,11 @@ function updateComputerName {
     log "Calling updateComputerName(`n>>> no args`n>>> )" "darkgray"
     # get the serial number and change the computer name
     $serialNumber = (Get-WmiObject win32_bios).SerialNumber
+    log "...pulled serial number [$serialNumber]." "gray"
     try {
-        Rename-Computer -NewName "WS-$serialNumber" -ErrorAction Stop
+        log "...renaming computer to [WS-$serialNumber]." "gray"
+        $res = Rename-Computer -NewName "WS-$serialNumber" -ErrorAction Stop
+        log ">> `$res: $res" "darkgray"
     } catch [InvalidOperationException] {
         #log ">> Caught Error: InvalidOperationException" "yellow"
         log "...Computer name is already correct." "yellow"
@@ -323,7 +326,7 @@ log "  [ ] Install System Updates."
 log "  [ ] Update AAIT user pic."
 log "  [ ] Join to domain."
 log "  [ ] Reboot computer and turn on secure boot."
-log "  [ ] Run client cript." "white"
+log "  [ ] Run client script." "white"
 #log "Automation complete.  Press any key to reboot." "white"
 timeout /t -1
 #Restart-Computer 

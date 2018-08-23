@@ -1,22 +1,8 @@
-﻿$gname = "SG-CanCreateO365Groups"; 
-$gdesc = "Group for users who are able to create groups."; 
-$mems = @("aait");
-$NameOfTenant = Read-Host -Prompt "Input the name of the tenant.  ex. @allaccess.onmicrosoft.com would be 'allaccess'"
-$UserCredential = Get-Credential -UserName ("aait@"+$NameOfTenant+".onmicrosoft.com") -Message "Admin Password"
-Import-Module MsOnline;
-Enable-Aadrm
-Connect-MsolService -Credential $UserCredential;
-    Import-PSSession $eps
-Disconnect-AadrmService
-
-
-function configAadrm($uc){
+﻿function configAadrm($uc){
     Get-Command -Module aadrm
     Connect-AadrmService -Credential $uc
-
     $rmsConfig = Get-AadrmConfiguration
     $licenseUri = $rmsConfig.LicensingIntranetDistributionPointUrl
-
 }
 
 function connectEx($uc){
@@ -27,14 +13,12 @@ function connectEx($uc){
     return $ExchangeSession
 }
 
-
-
 function fixEx($uc){
     #turn off focused inbox
     Get-OrganizationConfig
     Set-OrganizationConfig -FocusedInboxOn $false
-
-
+    #set passwords to not expire
+    get-msoluser | Set-MsolUser -UserPrincipalName $userEmail -PasswordNeverExpires $true
 }
 
 #enable irm
@@ -73,22 +57,51 @@ function setupSP($uc,$NameOfTenant){
     Set-SPOTenant -SharingCapability Disabled
 }
 
-get-msoluser | Set-MsolUser -UserPrincipalName $userEmail -PasswordNeverExpires $true
-$g = New-MsolGroup -DisplayName $gname -Description $gdesc
-$mems | foreach {$uid = (Get-MsolUser -SearchString $_).ObjectId; Add-MsolGroupMember -GroupObjectId $g.ObjectId -GroupMemberType User -GroupMemberObjectId $uid; }
-Set-OrganizationConfig -FocusedInboxOn $false; 
+function disableUserGroups($uc, $eps){
+    #disable users's ability to create groups
+    Import Module MsOnline; 
+    Connect-MsolService -Credential $uc;
+    Import-PSSession $eps;
+    #create group that can create groups
+    $gname = "SG-CanCreateO365Groups"
+    $gdesc = "Group for users who are able to create groups."
+    $mems = @("aait");
+    $g = New-MsolGroup -DisplayName $gname -Description $gdesc
+    $mems | foreach {$uid = (Get-MsolUser -SearchString $_).ObjectId; Add-MsolGroupMember -GroupObjectId $g.ObjectId -GroupMemberType User -GroupMemberObjectId $uid; }
+    Connect-AzureAD -Credential $uc
+    #Change user default to not be able to create groups
+    $Template = Get-AzureADDirectorySettingTemplate | where {$_.DisplayName -eq 'Group.Unified'}
+    $Setting = $Template.CreateDirectorySetting()
+    New-AzureADDirectorySetting -DirectorySetting $Setting
+    $Setting = Get-AzureADDirectorySetting -Id (Get-AzureADDirectorySetting | where -Property DisplayName -Value "Group.Unified" -EQ).id
+    $Setting["EnableGroupCreation"] = $False
+    $Setting["Groupname"] = (Get-AzureADGroup -SearchString $gname).objectid
+    $Setting["GroupCreationAllowedGroupId"] = (Get-AzureADGroup -SearchString $gname).objectid
+    Set-AzureADDirectorySetting -Id (Get-AzureADDirectorySetting | where -Property DisplayName -Value "Group.Unified" -EQ).id -DirectorySetting $Setting
+    set-AzureADTenantDetail -TechnicalNotificationMails "support@allaccessinfotech.com"
+    $Setting.values
+}
 
-Connect-AzureAD -Credential $UserCredential; 
-$Template = Get-AzureADDirectorySettingTemplate | where {$_.DisplayName -eq 'Group.Unified'}
-$Setting = $Template.CreateDirectorySetting()
-New-AzureADDirectorySetting -DirectorySetting $Setting
-$Setting = Get-AzureADDirectorySetting -Id (Get-AzureADDirectorySetting | where -Property DisplayName -Value "Group.Unified" -EQ).id
-$Setting["EnableGroupCreation"] = $False
-$Setting["Groupname"] = (Get-AzureADGroup -SearchString "SG-CanCreateO365Groups").objectid
-$Setting["GroupCreationAllowedGroupId"] = (Get-AzureADGroup -SearchString "SG-CanCreateO365Groups").objectid
-Set-AzureADDirectorySetting -Id (Get-AzureADDirectorySetting | where -Property DisplayName -Value "Group.Unified" -EQ).id -DirectorySetting $Setting
-set-AzureADTenantDetail -TechnicalNotificationMails "support@allaccessinfotech.com "
-$Setting.values
+function main {
+    $NameOfTenant = Read-Host -Prompt "Input the name of the tenant.  ex. @allaccess.onmicrosoft.com would be 'allaccess'"
+    $uc = Get-Credential -UserName ("aait@"+$NameOfTenant+".onmicrosoft.com") -Message "Admin Password"
+    $eps = $UserCredential
 
+    Import-Module MsOnline;
+    Enable-Aadrm
+    Connect-MsolService -Credential $uc;
+    Import-PSSession $eps
+    
+    configAadrm $uc
+    connectEx $uc
+    fixEx $uc
+    enableIrm $uc
+    setUpEmailEncryption $uc $eps
+    setupSP $uc $NameOfTenant
+    disableUserGroups $uc $eps
 
-Remove-Pssession $session; 
+    Remove-Pssession $eps;
+    Disconnect-AadrmService
+}
+
+main

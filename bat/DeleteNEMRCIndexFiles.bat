@@ -1,0 +1,1 @@
+del C:\ServerFolders\apps\NEMRC\NEMRC\*.idx

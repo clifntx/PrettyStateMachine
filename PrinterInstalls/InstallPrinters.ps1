@@ -22,26 +22,26 @@ Param(
     [int]$qa = 0
     )
 
-$DRIVER_URL_MAP = @(
-        @{"driver"="HP Universal Printing PCL 6"; "path"="\HP\HPUniversalPCL6\hpcu215u.inf"; "url" = "https://s3.amazonaws.com/aait/HP.zip"},
-        @{"driver"="KONICA MINOLTA 4750 Series PCL6"; "path"="\KonicaMinolta\bizhub4750Series_Win10_PCL_PS_XPS_FAX_v3.1.0.0\Drivers\Win_x64\KOBK1J__.inf"; "url" = "https://s3.amazonaws.com/aait/KonicaMinolta.zip"},
-        @{"driver"="KONICA MINOLTA C3110 PCL6"; "path"="\KonicaMinolta\C3110\bizhubC3110_Win10_PCL_PS_XPS_FAX_v1.2.1.0\bizhubC3110_Win10_PCL_PS_XPS_FAX_v1.2.1.0\Drivers\Win_x64\KOBK4J__.inf"; "url" = "https://s3.amazonaws.com/aait/KonicaMinolta.zip"},
-        @{"driver"="KONICA MINOLTA C3850 Series PCL6"; "path"="\KonicaMinolta\BizhubC3850fs_MFP_Win_x64\PCL\english\KOBJ_J__.inf"; "url" = "https://s3.amazonaws.com/aait/KonicaMinolta.zip"},
+$DRIVER_URL_MAP = @(https://s3.amazonaws.com/aait/printerDrivers/Canon.zip
+        @{"driver"="HP Universal Printing PCL 6"; "path"="\HP\HPUniversalPCL6\hpcu215u.inf"; "url" = "https://s3.amazonaws.com/aait/printerDrivers/HP.zip"},
+        @{"driver"="KONICA MINOLTA 4750 Series PCL6"; "path"="\KonicaMinolta\bizhub4750Series_Win10_PCL_PS_XPS_FAX_v3.1.0.0\Drivers\Win_x64\KOBK1J__.inf"; "url" = "https://s3.amazonaws.com/aait/printerDrivers/KonicaMinolta.zip"},
+        @{"driver"="KONICA MINOLTA C3110 PCL6"; "path"="\KonicaMinolta\C3110\bizhubC3110_Win10_PCL_PS_XPS_FAX_v1.2.1.0\bizhubC3110_Win10_PCL_PS_XPS_FAX_v1.2.1.0\Drivers\Win_x64\KOBK4J__.inf"; "url" = "https://s3.amazonaws.com/aait/printerDrivers/KonicaMinolta.zip"},
+        @{"driver"="KONICA MINOLTA C3850 Series PCL6"; "path"="\KonicaMinolta\BizhubC3850fs_MFP_Win_x64\PCL\english\KOBJ_J__.inf"; "url" = "https://s3.amazonaws.com/aait/printerDrivers/KonicaMinolta.zip"},
         
-        @{"driver"="KX DRIVER for Universal Printing"; "path"="\Kyocera\KXPrintDriverv7.3.1207\64bit\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/KXPrintDriverv7.3.1207.zip"},
-        @{"driver"="Kyocera ECOSYS M2535dn KX"; "path"="\Kyocera\KXPrintDriverv7.3.1207\64bit\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/KXPrintDriverv7.3.1207.zip"},
+        @{"driver"="KX DRIVER for Universal Printing"; "path"="\Kyocera\KXPrintDriverv7.3.1207\64bit\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/printerDrivers/KXPrintDriverv7.3.1207.zip"},
+        @{"driver"="Kyocera ECOSYS M2535dn KX"; "path"="\Kyocera\KXPrintDriverv7.3.1207\64bit\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/printerDrivers/KXPrintDriverv7.3.1207.zip"},
         
-        @{"driver"="Kyocera TASKalfa 5551ci"; "path"="\Kyocera\xxx1i_xxx1ci_PCL_Uni\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/Kyocera_xxx1i_xxx1ci_PCL_Uni.zip"},
-        @{"driver"="Kyocera TASKalfa 4501i"; "path"="\Kyocera\xxx1i_xxx1ci_PCL_Uni\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/Kyocera_xxx1i_xxx1ci_PCL_Uni.zip"},
-        @{"driver"="Kyocera TASKalfa 3501i"; "path"="\Kyocera\xxx1i_xxx1ci_PCL_Uni\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/Kyocera_xxx1i_xxx1ci_PCL_Uni.zip"},
-        @{"driver"="Kyocera TASKalfa 3051ci"; "path"="\Kyocera\xxx1i_xxx1ci_PCL_Uni\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/Kyocera_xxx1i_xxx1ci_PCL_Uni.zip"},
+        @{"driver"="Kyocera TASKalfa 5551ci"; "path"="\Kyocera\xxx1i_xxx1ci_PCL_Uni\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/printerDrivers/Kyocera_xxx1i_xxx1ci_PCL_Uni.zip"},
+        @{"driver"="Kyocera TASKalfa 4501i"; "path"="\Kyocera\xxx1i_xxx1ci_PCL_Uni\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/printerDrivers/Kyocera_xxx1i_xxx1ci_PCL_Uni.zip"},
+        @{"driver"="Kyocera TASKalfa 3501i"; "path"="\Kyocera\xxx1i_xxx1ci_PCL_Uni\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/printerDrivers/Kyocera_xxx1i_xxx1ci_PCL_Uni.zip"},
+        @{"driver"="Kyocera TASKalfa 3051ci"; "path"="\Kyocera\xxx1i_xxx1ci_PCL_Uni\oemsetup.inf"; "url" = "https://s3.amazonaws.com/aait/printerDrivers/Kyocera_xxx1i_xxx1ci_PCL_Uni.zip"},
 
-        @{"driver"="PCL6 V4 Driver for Universal Print"; "path"="\Savin\SavinUniversal\disk1\r4600.inf"; "url" = "https://s3.amazonaws.com/aait/Savin.zip"}
+        @{"driver"="PCL6 V4 Driver for Universal Print"; "path"="\Savin\SavinUniversal\disk1\r4600.inf"; "url" = "https://s3.amazonaws.com/aait/printerDrivers/Savin.zip"}
 
-        @{"driver"="TOSHIBA Universal Printer 2"; "path"="\Toshiba\64bit\eSf6u.inf"; "url" = "https://s3.amazonaws.com/aait/Toshiba_64bit.zip"},
+        @{"driver"="TOSHIBA Universal Printer 2"; "path"="\Toshiba\64bit\eSf6u.inf"; "url" = "https://s3.amazonaws.com/aait/printerDrivers/Toshiba_64bit.zip"},
 
-        @{"driver"="Xerox Global Print Driver PCL6"; "path"="\Xerox\X-GPD_5.404.8.0_PCL6_x64_Driver.inf\x2UNIVX.inf"; "url" = "https://s3.amazonaws.com/aait/Xerox.zip"},
-        @{"driver"="Xerox AltaLink B8055 PCL6"; "path"="\Xerox\ALB80XX_5.528.10.0_PCL6_x64_Driver.inf\x2ASNOX.inf"; "url" = "https://s3.amazonaws.com/aait/Xerox.zip"}
+        @{"driver"="Xerox Global Print Driver PCL6"; "path"="\Xerox\X-GPD_5.404.8.0_PCL6_x64_Driver.inf\x2UNIVX.inf"; "url" = "https://s3.amazonaws.com/aait/printerDrivers/Xerox.zip"},
+        @{"driver"="Xerox AltaLink B8055 PCL6"; "path"="\Xerox\ALB80XX_5.528.10.0_PCL6_x64_Driver.inf\x2ASNOX.inf"; "url" = "https://s3.amazonaws.com/aait/printerDrivers/Xerox.zip"}
         )
 $PRINTER_CONFIG_URL = "https://s3.amazonaws.com/aait/config_Printers.csv"
 $PRINTER_CONFIG_PATH = "c:\push\config_Printer.csv"
