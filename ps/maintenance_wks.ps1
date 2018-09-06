@@ -16,8 +16,13 @@ function log ($str, $fc="white"){
         default {$priority = 1; $fc = "white"}
         }
     if ($priority -ge $logLevel) {
-        write-host $str -ForegroundColor $fc
+        #write-host $str -ForegroundColor $fc
+        $Script:log += "$str`n"
     }
+}
+function logNow ($str, $fc="white"){
+    write-host $str -ForegroundColor $fc
+    log $str $fc
 }
 function sum($list){
     $sum = 0
@@ -51,36 +56,25 @@ function download($driverUrl, $downloadPath) {
 }
 function buildConfig($configUrl){
     log "Calling buildConfig(`n>>> `$configUrl=$configUrl`n>>> )" "darkgray"  
-
     $downloadPath = "c:\push\wksMaintenanceConfig.zip"
     $csvPath = "c:\push\wksMaintenanceConfig.csv"
     $lod = @{}
-    
-    #download and extract csv from url
-    #download $configUrl $extractPath
-    #extract $extractPath $csvPath
-    #convert csv to config lod
-    #$csv = Import-Csv $configCsv
-
     return $lod
 }
-function getStorageSize($drive=$null){
-    log "Calling getStorageSize(`n>>> `$drive=$drive`n>>> )" "darkgray"  
+function getUsedStorageSize($drive=$null){
+    log "Calling getUsedStorageSize(`n>>> `$drive=$drive`n>>> )" "darkgray"  
     $data = get-wmiobject win32_LogicalDisk -Filter "DriveType = 3" | 
         Select DeviceID, FreeSpace, Size
-    $data | foreach {
-        Add-Member -InputObject $_ -NotePropertyName "UsedSpace" -NotePropertyValue ($_.Size - $_.FreeSpace)
-    }
     if ($drive -eq $null) {
-        $sum = sum $data.FreeSpace
-        return $sum/1Gb
+        $res = ((sum $data.Size)-(sum $data.FreeSpace))/1Gb
     }else{
         $data | foreach {
             if($_.DeviceID -contains ($drive + ":")){
-                return $_.FreeSpace/1Gb
+                $res = (($_.Size)-($_.FreeSpace))/1Gb
             }
         }
     }
+    return $res
 }
 function deleteFile($path){
     log " Calling deleteFile (`n>>> `$path=$path`n>>> )" "darkgray" 
@@ -201,7 +195,7 @@ function checkToSeeIfDirIsEmpty ($pathToDir, $quiet=$false){
         }
 
         $remainingFiles = (dir $pathToDir -EA SilentlyContinue).Length
-        if ($remainingFiles -lt 10){
+        if ($remainingFiles -lt 30){
             $res = $true
         }
        
@@ -341,14 +335,15 @@ function runDiskCleanup(){
     $t = cleanmgr /verylowdisk
     $n = 0
     While($true) {
-        Wait-Event -Timeout 5
+        Wait-Event -Timeout 60
         if(checkTempDirs -quiet $true){
-            log "completed disk cleanup." "gray"            
+            log "completed disk cleanup." "gray"
+            break            
         } else {
             log "waiting($n)" "gray"            
         }
-        if($n -gt 5){
-            log "WARNING: Timed out while waiting for Dick Cleanup." "Yellow"
+        if($n -gt 10){
+            log "WARNING: Timed out while waiting for Disk Cleanup." "Yellow"
             break
         }
         $n += 1
@@ -363,8 +358,11 @@ function defragDisk($disk){
     pass
 }
 function main(){
+    log "Calling main(`n>>> `no args`n>>> )" "darkgray"
+    
     #buildConfig
-    $pre = getStorageSize
+    $pre = getUsedStorageSize
+    log "`$pre=$pre"
     $res = @()
     $res += deleteTempFiles
     #$res += deleteUserTempFiles
@@ -373,18 +371,18 @@ function main(){
     $res += flushDNS
     $res += runDiskCleanup
     $res += checkTempDirs
-    $post = getStorageSize
+    $post = getUsedStorageSize
 
-    log "Maintenance complete:" "green"
-    log "  Pre maintenance free space: $pre Gb" "green"
-    log "  Pre maintenance free space: $pre Gb" "green"
-    log "  Post maintenance free space: $post Gb" "green"
-    log "  Removed $($pre-$post) Gb of files." "green"
-
+    logNow "Maintenance complete" "green"
+    logNow "  Pre maintenance free space: $([math]::Round($pre,2)) Gb" "white"
+    logNow "  Post maintenance free space: $([math]::Round($post,2)) Gb" "white"
+    logNow "  Removed $([math]::Round($pre-$post,2)) Gb of files." "green"
+    logNow $Script:log
     #runDiskCheck #schedules a diskcheck for the next reboot
     #Restart-Computer    
 }
 
 #may want to upgrade PS first.
 clear
+$Script:log = "Starting log...`n"
 main

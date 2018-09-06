@@ -1,6 +1,7 @@
-# Main powershell script to run automation
-param(
-    [int]$logLevel = -1
+﻿param(
+    $repoPath= "https://s3.amazonaws.com/aait/scripts/QAStandardSetup.ps1", #$(throw "No config provided.  Please include the path to a config csv."),
+    $pushPath = "C:\Push",
+    $logLevel = 2
     )
 
 function log ($str, $fc="white"){
@@ -18,315 +19,90 @@ function log ($str, $fc="white"){
         write-host $str -ForegroundColor $fc
         }
     }
-function changeScriptingPolicy($pol="restricted") {
-    log "Calling changeScriptingPolicy(`n>>> pol=$pol`n>>> )" "darkgray"
-    try {            
-        #Set-ExecutionPolicy $pol
-        if ($pol -eq "unrestricted") {  
-            Set-ExecutionPolicy unrestricted
+
+function download($driverUrl, $downloadPath) {
+    log " Calling download(`n>>> -driverUrl $driverUrl`n>>> -downloadPath $downloadPath`n>>> )" "darkgray"
+    try {
+        if (test-path $downloadPath) { remove-item $downloadPath -Force }
+        $n = 0
+        while(!((Test-Path $downloadPath) -or ($n -gt 10))) {
+            $wc = New-Object System.Net.WebClient
+            $wc.DownloadFile($driverUrl, $downloadPath)
+            log "...($n) downloading [$driverUrl]" "gray"
+            timeout /t ($n*3)
+            $n += 1
+        }
+    } catch [System.Management.Automation.MethodInvocationException] {
+        log ">> CAUGHT ERROR: <MethodInvocationException> Cannot access url [$driverUrl] ..." "Yellow"
+        log ">> CAUGHT ERROR: $PSItem" "Yellow"
+        return $false
+    } catch {
+        log "E!"
+        log ">> UNCAUGHT ERROR: $PSItem" "red"
+        log ">> UNCAUGHT ERROR: $($Error[0].Exception.GetType().fullname)" "red"
+        return $false
+        }
+    return (Test-Path $downloadPath)
+}
+function makeFolder($path){
+    if(Test-Path $path){
+        log "Folder already exists [$path]" "gray"
+    }else{
+        $t = mkdir $path
+        log "Created folder [$path]" "gray"
+    }
+    return (test-path $path)
+}
+function runScript($path, $margs = @()){
+    log "Calling runScript(`n>>> `$path `"$path`"`n>>> `$margs=$margs`n>>> )" "darkgray"   
+    log "calling: $path $margs" "Gray"
+    Invoke-Expression "& `"$path`" $margs"
+}
+function main ($customerId, $repoPath, $path){
+    log "Calling main(`n>>> -customerId `"$customerId`"`n>>> -repoPath `"$repoPath`"`n>>> -path `"$path`"`n>>>`n>>> )" "darkgray"
+    if($repoPath.contains("http")){
+        $repoIsUrl = $true
+        if(download $repoPath $path) {
+            log "Downloaded script." "gray"
         } else {
-            Set-ExecutionPolicy restricted
-            }
-        $epol = Get-ExecutionPolicy
-        log "...set execution policy to [$epol]"      
-    } catch [UnauthorizedAccessException] {
-        #log ">> Caught Error: UnauthorizedAccessException" "yellow"
-        log "...running in an unelevated session.  Rerun script as admin." "red"
-    } catch {
-        log ">> Uncaught Error: $($Error[0].Exception.getType().FullName)" "red"
-        log ">> ... $($Error[0].Exception)" "red"
+            log ">>ERROR: Could not download script from `"$repoPath`"" "red"
+            $customerId = "001"
         }
-}
-function checkForSecureBoot {
-    log "Calling keysAreCorrect(`n>>> no args`n>>> )" "darkgray"    
-    log "...checking for secure boot"
-    try { 
-        if(Get-SecureBootPolicy) {
-            log "...secure boot enabled." "gray"
-            return $true; 
-        } else {
-            log "...secure boot not enabled." "red"            
-            return $false
-            }
-    } catch { 
-        log "...secure boot not enabled." "red"                    
-        return $false; }
-    }
-function checkBitLockerStatus {
-    log "Calling checkBitLockerStatus(`n>>> no args`n>>> )" "darkgray"    
-        $statuses = Get-BitLockerVolume
-        foreach ($s in $statuses) {
-            switch($s.VolumeStatus) {
-                "FullyDecrypted" {$c = "red"; $res = $false; }
-                "FullyEncrypted" {$c = "green"; $res = $true; }
-                }
-            log "Volume [$($_.MountPoint)] encryption status: [$($_.ProtectionStatus)] $($_.VolumeStatus)" $c
-            }
-        return $res
-    }
-function setBitLockerStatus ($newStatus) {
-    switch($newStatus) {
-        $true {Enable-Bitlocker}
-        $false {Disable-Bitlocker}
-        default {throw (">>ERROR: Please enter a valid boolean value.  To turn on encryption: setBitLockerStatus `$true")}
-        }
-    if (checkBitLockerStatus -eq $newStatus) {
-        log "...sucessfully updated BitLocker status to [$newStatus]." "gray"
     } else {
-        log "...failed to update BitLocker status to [$newStatus]." "red"
-        }
+        $repoIsUrl = $false
+        log "Pulled script." "gray"
     }
-function activateWindows ($key=""){
-    log "Calling activateWindows(`n>>> key=$key`n>>> )" "darkgray"        
-    $KMSservice = Get-WMIObject -query "select * from SoftwareLicensingService"
-    if($key.Length -lt 1) {
-        $key = $KMSservice.OA3xOriginalProductKey
-        log "...reset key from board: `"$key`""
-        }
-    try {
-        $ref = $KMSservice.InstallProductKey($key)
-        $ref = $KMSservice.RefreshLicenseStatus()
-    } catch [System.Management.Automation.RuntimeException] {
-        #log ">> Caught Error: System.Management.Automation.RuntimeException" "yellow"
-        log "...no key found (key: `"$key`").  Cannot activate Windows." "red"
-    } catch {
-        log ">> Uncaught Error: $($Error[0].Exception.getType().FullName)" "red"
-        log ">> ... $($Error[0].Exception)" "red"
-        }
-    }
-function copyUniDirToPushDir($uniPushPath, $pushPath) {
-# copy the push folder from the NAS 
-    log "Calling keysAreCorrect(`n>>> uniPushPath=$uniPushPath`n>>> pushPath=$pushPath`n>>> )" "darkgray"            
-    log "Copying universal push folder..." "white"
-    dir $uniPushPath | foreach { 
-        copyFolderFromUniPush $uniPushPath $pushPath $_
-        }
-    $specialChecks = @("$pushPath\install_these")
-    foreach ($dirToCheck in $specialChecks) {    
-        if (checkThatFolderIsCopied $dirToCheck) {
-            og "...found [$folderPath]" "green";        } else {
-            log "...did not find dir [$dirToCheck] in [$pushPath]. Retrying." "yellow"; 
-            copy-item $dirToCheck $pushPath -recurse -force; 
-            }  
-        }
-    } 
-
-function copyFolderFromUniPush($uniPushPath, $pushPath, $folderPath) {
-    log "Calling copyFolderFromUniPush(`n>>> uniPushPath=$uniPushPath`n>>> pushPath=$pushPath`n>>> folderPath=$folderPath>>> )" "darkgray"
-    log "...copying [$uniPushPath\$folderPath] to [$pushPath]" "gray";     
-    copy-item "$uniPushPath\$folderPath" $pushPath -recurse -force;
-    }
-    
-function checkThatFolderIsCopied($pushPath, $folderPath) {
-    log "Calling checkThatFolderIsCopied(`n>>> pushPath=$pushPath`n>>> folderPath=$folderPath`n>>> )" "darkgray"
-    $folderPath = "$pushPath\$folderPath"
-    log "...checking for [$folderPath]" "gray"; 
-    $res = $true
-    if (test-path $folderPath) {
-        log "...found [$folderPath]" "green";
-        dir $folderPath | foreach {
-            if (test-path "$folderPath\$_") {
-                log "......file exists [$_]" "green"
-            } else {
-                log "......file not found[$_]" "red"
-                $res = $false
-                }
+    $lod = @()
+    $csv = @(@{"name"="01";"num"=1};@{"name"="02";"num"=2};@{"name"="03";"num"=3};@{"name"="04";"num"=4})
+    foreach ($r in $csv) {
+        log ">check($($r.customerId) -eq $customerId)" "darkgray"
+        if ($r.customerId -eq $customerId) {
+            log "...located customerId.  $($r.customerId)" "gray"
+            $keys = $r.PSObject.Properties.Name
+            $c = @{}
+            $keys | foreach {
+            $c[$_] = $r[0].($_)
             }
-    } else {
-        $res = $false
+            $lod += $c
         }
-    return $res
     }
-
-function installSoftware ($uniPushPath, $pushPath) {
-    log "Calling installSoftware(`n>>> uniPushPath=$uniPushPath`n>>> pushPath=$pushPath`n>>> )" "darkgray"
-    log "Installing needed applications." "white"
-
-    $installerDir = "install_these"
-    # Verify that exes have been copied
-    if(!(checkThatFolderIsCopied $pushPath $installerDir)) {
-        copyFolderFromUniPush $uniPushPath $pushPath $installerDir
-        }
-
-    # Checks for Lenovo and installs System Update if Lenovo
-    $x = Get-WmiObject Win32_BaseBoard | Select-Object Manufacturer
-    if($x.Manufacturer -eq "LENOVO"){ 
-        log "...identified this as a Lenovo device.  Installing System Update." "gray"
-        $command = "$pushPath\$installerDir\systemupdate.exe /verysilent /norestart;"
-        log "...running $_ installer [{ $command }]." "gray"
-        #$scriptBlock = [Scriptblock]::Create($command)
-        #$call = Invoke-Command -ScriptBlock $scriptBlock
-        #log "      > $call" "darkgray" 
-                
-        log "...running { $command }." "gray"
-        & {Start-Process PowerShell.exe -ArgumentList $command -Verb RunAs}
-        }
-    # Installs Ninite
-    @("ninite.exe", "niniteVLC.exe") | foreach {
-        $command = "$pushPath\$installerDir\$_;"
-        log "...running $_ installer [{ $command }]." "gray"
-        #$scriptBlock = [Scriptblock]::Create($command)
-        #$call = Invoke-Command -ScriptBlock $scriptBlock
-        #log "      > script call: $call" "darkgray"
-
-        log "...running { $command }." "gray"
-        & {Start-Process PowerShell.exe -ArgumentList $command -Verb RunAs}
-        }    
-    }
-
-function updateComputerName {
-    log "Calling updateComputerName(`n>>> no args`n>>> )" "darkgray"
-    # get the serial number and change the computer name
-    $serialNumber = (Get-WmiObject win32_bios).SerialNumber
-    log "...pulled serial number [$serialNumber]." "gray"
-    try {
-        log "...renaming computer to [WS-$serialNumber]." "gray"
-        $res = Rename-Computer -NewName "WS-$serialNumber" -ErrorAction Stop
-        log ">> `$res: $res" "darkgray"
-    } catch [InvalidOperationException] {
-        #log ">> Caught Error: InvalidOperationException" "yellow"
-        log "...Computer name is already correct." "yellow"
-    } catch {
-        log ">> Uncaught Error: $($Error[0].Exception.getType().FullName)" "red"
-        log ">> ... $($Error[0].Exception)" "red"
-        }
-}
-
-
-function removeDefaultApps($scriptPath) {
-    log "Calling installPrinters(`n>>> pathToPrinterConfig=$pathToPrinterConfig`n>>> )" "darkgray"
-    log "...opening a window for removeDefaultApps" "gray"      
-    $command = "-ExecutionPolicy Bypass -File $scriptPath\removeDefaultApps.ps1"
-    log ">> Calling & {Start-Process PowerShell.exe -ArgumentList $command -Verb RunAs}" "darkgray"
-    & {Start-Process PowerShell.exe -ArgumentList $command -Verb RunAs}
-    log "      > script call: $call" "darkgray"           
-    }
-
-
-function disableDefaultsSettings($scriptPath) {
-    log "Calling disableDefaultsSettings(`n>>> scriptPath=$scriptPath`n>>> )" "darkgray"
-    log "...opening a window for disableDefaultsSettings" "gray"      
-    $command = "-ExecutionPolicy Bypass -File $scriptPath\disableDefaultsSettings.ps1"
-    log ">> Calling & {Start-Process PowerShell.exe -Exec-ArgumentList $command -Verb RunAs}" "darkgray"
-    & {Start-Process PowerShell.exe -ArgumentList $command -Verb RunAs}
-    log "      > script call: $call" "darkgray" 
-}
-
-function stopUnwantedServices {
-    log "Calling stopUnwantedServices(`n>>> no args`n>>> )" "darkgray"
-    try {
-        $dump = get-service Diagtrack,DmwApPushService,XblAuthManager,XblGameSave,XboxNetApiSvc,TrkWks,WMPNetworkSvc -ErrorAction Stop|
-        stop-service -passthru -ErrorAction Stop | 
-        set-service -startuptype disabled -ErrorAction Stop
-    } catch [Microsoft.PowerShell.Commands.ServiceCommandException] {
-        log ">> Caught Error: CouldNotStopService,Microsoft.PowerShell.Commands.StopServiceCommand" "yellow"
-        log "...could not stop services." "yellow"
-    } catch {
-        log ">> Uncaught Error: $($Error[0].Exception.getType().FullName)" "red"
-        log ">> ... $($Error[0].Exception)" "red"
-        }
-}
-
-function installSystemUpdates {
-    log "Calling installSytemUpdates(`n>>> no args`n>>> )" "darkgray"
-    log "...running SytemUpdate to install all firmware." "gray"
-    #$path = "'c:\Program Files (x86)\Lenovo\System Update\tvsu.exe'"
-    $path = "C:\Program Files (x86)\Lenovo\System Update\tvsu.exe"
-    $args = "/CM '-search ALL -action INSTALL -includerebootpackages 1,3,4 -noreboot -nolicense'"
-    $command = "& $path $args"
-    $scriptBlock = [Scriptblock]::Create($command)
-    $call = Invoke-Command -ScriptBlock $scriptBlock
-    log "      > $call" "darkgray"
+    log "...located $($lod.Length) config record(s)." "gray"
+    $config = $lod[0]               
         
+    log "...returning config." "darkgray"
+    log ">{" "darkgray"
+    foreach ($k in $keys) {
+        log ">   `$config[$k] = $($config[$k])" "darkgray"
     }
-
-function turnOnBitlocker {
-    log "Calling turnOnBitlocker(`n>>> no args`n>>> )" "darkgray"
-    & {control /name Microsoft.BitLockerDriveEncryption}
-    }
-
-function setWinUpdateUXKeys ($scriptPath) {
-    log "Calling setWinUpdateUXKeys(`n>>> no args`n>>> )" "darkgray"    
-    log "...setting windows UX keys from [$scriptPath\SetWinUpdateUXKeys]" "gray"
-    $command = "$scriptPath\SetWinUpdateUXKeys.ps1"
-    log "...running { $command }." "gray"
-    & {Start-Process PowerShell.exe -ArgumentList $command -Verb RunAs}
-    #$scriptBlock = [Scriptblock]::Create($command)
-    #$call = Invoke-Command -ScriptBlock $scriptBlock
-
-    }
-
-function setupAllAccessUser {
-    $u = get-localuser
-    if ($u.Name.Contains("AllAccess")) {
-        net user AllAccess /expires:never
-    } else {
-        net user AllAccess good2go2009! /add /expires:never 
-    }
-    WMIC USERACCOUNT WHERE "Name='AllAccess'" SET PasswordExpires=FALSE
-    net localgroup administrators AllAccess /add
+    log ">}" "darkgray"
+    makeFolder $path.Substring(0,$path.LastIndexOf("\"))
+    $margs = ("-logLevel", "$script:logLevel")
+    runScript $path @("-logLevel", "$script:logLevel")
+    #timeout /t 20
+    Remove-Item -Path $path
+    New-Item -Path $path
 }
 
-function mainQA($scriptPath) {
-    log "Calling mainQA(`n>>> scriptPath=$scriptPath`n>>> )" "darkgray"
-    log "...opening a window for QA" "gray"
-    #.$scriptPath\QAStandardSetup -customerId "001"
-
-    $call = "-ExecutionPolicy Bypass -File '$scriptPath\QAStandardSetup.ps1' -customerId '001' -logLevel $($script:logLevel)"
-    log "Calling {Start-Process PowerShell.exe -ArgumentList '$call' -Verb RunAs}" "gray"
-    & {Start-Process PowerShell.exe -ArgumentList $call -Verb RunAs}
-    #& {Start-Process PowerShell.exe -ArgumentList "-ExecutionPolicy Bypass -File $fileName -logLevel 1" -Verb RunAs}
-   }
-
-function main ($uniPushPath, $pushPath, $scriptPath) {
-    log "Calling main(`n>>> uniPushPath=$uniPushPath`n>>> pushPath=$pushPath`n>>> scriptPath=$scriptPath`n>>> )" "darkgray"
-    #Enabling scripting
-    #changeScriptingPolicy "unrestricted"
-    # remove default windows apps
-    removeDefaultApps $scriptPath #DOESN"T WORK
-    #disables many Win10 default settings
-    disableDefaultsSettings $scriptPath
-    # get the serial number and change the computer name
-    updateComputerName
-    # activate windows from OEM if no key provided.
-    activateWindows
-    #copy files from universal push folder to c:\push
-    copyUniDirToPushDir $uniPushPath $pushPath
-    #Sets several reg keys effecting UX
-    #log "Setting windows UX keys from [$scriptPath\SetWinUpdateUXKeys]" "White"
-    #.$scriptPath\SetWinUpdateUXKeys -logLevel 2
-    setWinUpdateUXKeys $scriptPath
-    # Stopping and disabling diagnostics tracking services, Onedrive sync service, various Xbox services, Distributed Link Tracking, and Windows Media Player network sharinglog # Stopping and disabling diagnostics tracking services, Onedrive sync service, various Xbox services, Distributed Link Tracking, and Windows Media Player network sharing
-    stopUnwantedServices
-    #install several applications
-    installSoftware $uniPushPath $pushPath
-    #install all several applications
-    installSystemUpdates
-    # Enable BitLocker
-    #turnOnBitlocker
-    setupAllAccessUser
-    #QA all changes
-    log "Running QA script [$scriptPath\QAStandardSetup]" "White"
-    mainQA $scriptPath
-    #Disabling scripting
-    #changeScriptingPolicy "restricted"
-    }
-
+$path = "$pushPath\temp3.ps1"
 clear
-# CONSTANTS
-$PUSH_PATH = "C:\Push";
-$SCRIPT_PATH = "\\192.168.1.24\technet\Scripts\wksSetups"
-$UNIPUSH_PATH = "\\192.168.1.24\technet\Setup_Workstations\UniversalPushFolder\Push";
-
-main $UNIPUSH_PATH $PUSH_PATH $SCRIPT_PATH
-
-log "Automation complete." "white"
-log "Nexts Steps: "
-log "  [ ] Install System Updates."
-log "  [ ] Update AAIT user pic."
-log "  [ ] Join to domain."
-log "  [ ] Reboot computer and turn on secure boot."
-log "  [ ] Run client script." "white"
-#log "Automation complete.  Press any key to reboot." "white"
-timeout /t -1
-#Restart-Computer 
+main 001 $repoPath $path

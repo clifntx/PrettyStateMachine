@@ -1,5 +1,5 @@
 ﻿param(
-    $repoPath= "https://s3.amazonaws.com/aait/scripts/QAStandardSetup.ps1", #$(throw "No config provided.  Please include the path to a config csv."),
+    $repoPath= $(throw "No config provided.  Please include the path to a config csv."),
     $pushPath = "C:\Push",
     $logLevel = 2
     )
@@ -102,6 +102,7 @@ function main ($customerId, $repoPath, $path){
     Remove-Item -Path $path
     New-Item -Path $path
 }
+
 $path = "$pushPath\temp3.ps1"
 clear
 main 001 $repoPath $path

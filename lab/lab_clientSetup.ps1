@@ -72,6 +72,69 @@ function buildConfig($configPath) {
     return $config
     }
 
+function TEST_buildConfig($customerId, $configRepoPath, $configPath) {
+    log "Calling buildConfig(`n>>> -customerId `"$customerId`n>>> -configRepoPath `"$configRepoPath`"`n>>> -configPath `"$configPath`"`n>>>`n>>> )" "darkgray"
+    # check to see if configRepoPath is a url or unc path
+    if($configRepoPath.contains("http")){
+        #if repo is url, download and unzip
+        $repoIsUrl = $true
+        if(download $configRepoPath $configPath) {
+            $csv = import-csv $configPath
+            Remove-Item -Path $configPath
+        } else {
+            log ">>ERROR: Could not download config from `"$configUrl`"" "red"
+            $customerId = "001"
+        }
+    } else {
+        #if repo is unc, path to csv is configRepoPath
+        $repoIsUrl = $false
+        $csv = $configRepoPath
+    }
+   
+    if($customerId.Length -ne 3){
+        $customerId = promptForCustomerId ($csv)
+        log "User inputted customer id: $customerId; Len: $($customerId.Length)" "gray"
+    } else {
+        log "Script provided customer id: $customerId; Len: $($customerId.Length)" "gray"
+    }
+
+    if($customerId -eq "001") {
+        $config = @{
+            "install_these"=$Null;
+            "customerId"=$Null;
+            "pathToSetupFolder"=$Null;
+            "pathToPrinterConfig"=$Null;
+            "Domain"=$Null;
+        }
+        log "...no config provided.  Returning blank config." "white"
+    } else {
+        $lod = @()
+        foreach ($r in $csv) {
+            log ">check($($r.customerId) -eq $customerId)" "darkgray"
+            if ($r.customerId -eq $customerId) {
+                log "...located customerId.  $($r.customerId)" "gray"
+                $keys = $r.PSObject.Properties.Name
+                $c = @{}
+                $keys | foreach {
+                $c[$_] = $r[0].($_)
+                }
+                $lod += $c
+            }
+        }
+        log "...located $($lod.Length) config record(s)." "gray"
+        $config = $lod[0]               
+        
+        log "...returning config." "darkgray"
+        log ">{" "darkgray"
+        foreach ($k in $keys) {
+            log ">   `$config[$k] = $($config[$k])" "darkgray"
+        }
+        log ">}" "darkgray"
+    }
+
+    return $config
+}
+
 function runMainScript() {
     log "Calling runMainScript(`n>>> no args`n>>> )" "darkgray"
     ."\\192.168.1.24\technet\Setup_Workstations\main" -logLevel $logLevel
